@@ -192,6 +192,31 @@ void NiBSplineTransformInterpolator::SetScale( float value ) {
 	scale = value;
 }
 
+int NiBSplineTransformInterpolator::GetTranslationOffset() {
+	return translationOffset;
+}
+
+void NiBSplineTransformInterpolator::SetTranslationOffset(int value) {
+	translationOffset = value;
+}
+
+int NiBSplineTransformInterpolator::GetRotationOffset() {
+	return rotationOffset;
+}
+
+void NiBSplineTransformInterpolator::SetRotationOffset(int value) {
+	rotationOffset = value;
+}
+
+int NiBSplineTransformInterpolator::GetScaleOffset() {
+	return scaleOffset;
+}
+
+void Niflib::NiBSplineTransformInterpolator::SetScaleOffset(int value) {
+	scaleOffset = value;
+}
+
+
 
 vector< Quaternion > NiBSplineTransformInterpolator::GetQuatRotateControlData() const
 {

@@ -9,6 +9,7 @@ All rights reserved.  Please see niflib.h for license. */
 #include <iostream>
 #include <stdexcept>
 #include "dll_export.h"
+#include "nif_basic_types.h"
 
 using namespace std;
 namespace Niflib {
@@ -1390,9 +1391,6 @@ struct InertiaMatrix {
 	*/
 	NIFLIB_API float Adjoint( int skip_r, int skip_c ) const;
 };
-
-// Declaration of half float
-typedef uint16_t hfloat;
 
 NIFLIB_API float ConvertHFloatToFloat(hfloat h);
 NIFLIB_API hfloat ConvertFloatToHFloat(float f);

@@ -142,6 +142,43 @@ public:
 	*/
 	NIFLIB_API void SetScale( float value );
 
+	/*!
+	* Gets the translation offset for the control points in the NiSplineData
+	* \return The translation offset
+	*/
+	NIFLIB_API int GetTranslationOffset();
+
+	/*!
+	* Sets the translation offset for the control points in the NiSplineData
+	* \param[in] The new translation offset
+	*/
+	NIFLIB_API void SetTranslationOffset(int value);
+
+	/*!
+	* Gets the rotation offset for the control points in the NiSplineData
+	* \return The rotation offset
+	*/
+	NIFLIB_API int GetRotationOffset();
+
+	/*!
+	* Sets the rotation offset for the control points in the NiSplineData
+	* \param[in] The new rotation offset
+	*/
+	NIFLIB_API void SetRotationOffset(int value);
+
+	/*!
+	* Gets the scale offset for the control points in the NiSplineData
+	* \return The scale offset
+	*/
+	NIFLIB_API int GetScaleOffset();
+
+	/*!
+	* Sets the scale offset for the control points in the NiSplineData
+	* \param[in] The new scale offset
+	*/
+	NIFLIB_API void SetScaleOffset(int value);
+
+
 
 	/*!
 	* Retrieves the control quaternion rotation data.

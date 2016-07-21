@@ -376,337 +376,355 @@ public:
 
 	//--BEGIN MISC CUSTOM CODE--//
 
+	/*!
+	* Gets the glossiness of the material
+	* \return The glossiness
+	*/
+	NIFLIB_API float GetGlossiness() const;
+
+	/*!
+	* Sets the glossiness of the material
+	* \param[in] The new glossiness value
+	*/
+	NIFLIB_API void SetGlossiness(float value);
+
+	/*!
+	* Sets the value of the texture offset of the uv's
+	* \param[in] The new value of the uv offsets
+	*/
+	NIFLIB_API void SetUVOffset(const TexCoord & value);
+
 	// Skyrim's shaders: 0=default 1=EnvMap, 2=Glow, 5=Skin, 6=Hair, 7=Unknown,
 	// 11=Ice/Parallax, 15=Eye.
 	// \return The current value.
-	BSLightingShaderPropertyShaderType GetSkyrimShaderType() const;
+	NIFLIB_API BSLightingShaderPropertyShaderType GetSkyrimShaderType() const;
 
 	// Skyrim's shaders: 0=default 1=EnvMap, 2=Glow, 5=Skin, 6=Hair, 7=Unknown,
 	// 11=Ice/Parallax, 15=Eye.
 	// \param[in] value The new value.
-	void SetSkyrimShaderType( BSLightingShaderPropertyShaderType value );
+	NIFLIB_API void SetSkyrimShaderType( BSLightingShaderPropertyShaderType value );
 
 
    // Skyrim Shader Flags for setting render/shader options.
    // \return The current value.
-   SkyrimShaderPropertyFlags1 GetShaderFlags1() const;
+	NIFLIB_API SkyrimShaderPropertyFlags1 GetShaderFlags1() const;
 
    // Skyrim Shader Flags for setting render/shader options.
    // \param[in] value The new value.
-   void SetShaderFlags1( const SkyrimShaderPropertyFlags1 & value );
+	NIFLIB_API void SetShaderFlags1( const SkyrimShaderPropertyFlags1 & value );
 
    // Skyrim Shader Flags for setting render/shader options.
    // \return The current value.
-   SkyrimShaderPropertyFlags2 GetShaderFlags2() const;
+	NIFLIB_API SkyrimShaderPropertyFlags2 GetShaderFlags2() const;
 
    // Skyrim Shader Flags for setting render/shader options.
    // \param[in] value The new value.
-   void SetShaderFlags2( const SkyrimShaderPropertyFlags2 & value );
+	NIFLIB_API void SetShaderFlags2( const SkyrimShaderPropertyFlags2 & value );
 
    // UV Offset
    // \return The current value.
-   TexCoord GetUvOffset() const;
+	NIFLIB_API TexCoord GetUvOffset() const;
 
    // UV Offset
    // \param[in] value The new value.
-   void SetUvOffset( const TexCoord & value );
+	NIFLIB_API void SetUvOffset( const TexCoord & value );
 
    // UV Scale
    // \return The current value.
-   TexCoord GetUvScale() const;
+	NIFLIB_API TexCoord GetUvScale() const;
 
    // UV Scale
    // \param[in] value The new value.
-   void SetUvScale( const TexCoord & value );
+	NIFLIB_API void SetUvScale( const TexCoord & value );
 
    // Texture Set, can have override in an esm/esp
    // \return The current value.
-   Ref<BSShaderTextureSet > GetTextureSet() const;
+	NIFLIB_API Ref<BSShaderTextureSet > GetTextureSet() const;
 
    // Texture Set, can have override in an esm/esp
    // \param[in] value The new value.
-   void SetTextureSet( Ref<BSShaderTextureSet > value );
+	NIFLIB_API void SetTextureSet( Ref<BSShaderTextureSet > value );
 
    // Glow color and alpha
    // \return The current value.
-   Color3 GetEmissiveColor() const;
+	NIFLIB_API Color3 GetEmissiveColor() const;
 
    // Glow color and alpha
    // \param[in] value The new value.
-   void SetEmissiveColor( const Color3 & value );
+	NIFLIB_API void SetEmissiveColor( const Color3 & value );
 
    // Multiplied emissive colors
    // \return The current value.
-   float GetEmissiveMultiple() const;
+	NIFLIB_API float GetEmissiveMultiple() const;
 
    // Multiplied emissive colors
    // \param[in] value The new value.
-   void SetEmissiveMultiple( float value );
+	NIFLIB_API void SetEmissiveMultiple( float value );
 
    // Unknown.
    // \return The current value.
-   string GetRootMaterial() const;
+	NIFLIB_API string GetRootMaterial() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetRootMaterial(const string & value);
+	NIFLIB_API void SetRootMaterial(const string & value);
 
    // How to handle texture borders.
    // \return The current value.
-   TexClampMode GetTextureClampMode() const;
+	NIFLIB_API TexClampMode GetTextureClampMode() const;
 
    // How to handle texture borders.
    // \param[in] value The new value.
-   void SetTextureClampMode( TexClampMode value );
+	NIFLIB_API void SetTextureClampMode( TexClampMode value );
 
    // The materials opacity (1=non-transparent).
    // \return The current value.
-   float GetAlpha() const;
+	NIFLIB_API float GetAlpha() const;
 
    // The materials opacity (1=non-transparent).
    // \param[in] value The new value.
-   void SetAlpha( float value );
+	NIFLIB_API void SetAlpha( float value );
 
 
 	// Refraction strength increases as value increases
 	// \return The current value.
-	float GetRefractionStrength() const;
+	NIFLIB_API float GetRefractionStrength() const;
 
 	// Refraction strength increases as value increases
 	// \param[in] value The new value.
-	void SetRefractionStrength( float value );
+	NIFLIB_API void SetRefractionStrength( float value );
 
    // The material's glossiness. (0-999)
    // \return The current value.
-   float GetSpecularPower_Glossiness() const;
+	NIFLIB_API float GetSpecularPower_Glossiness() const;
 
    // The material's glossiness. (0-999)
    // \param[in] value The new value.
-   void SetSpecularPower_Glossiness( float value );
+	NIFLIB_API void SetSpecularPower_Glossiness( float value );
 
    // Adds a colored highlight.
    // \return The current value.
-   Color3 GetSpecularColor() const;
+	NIFLIB_API Color3 GetSpecularColor() const;
 
    // Adds a colored highlight.
    // \param[in] value The new value.
-   void SetSpecularColor( const Color3 & value );
+	NIFLIB_API void SetSpecularColor( const Color3 & value );
 
    // Brightness of specular highlight. (0=not visible) (0-999)
    // \return The current value.
-   float GetSpecularStrength() const;
+	NIFLIB_API float GetSpecularStrength() const;
 
    // Brightness of specular highlight. (0=not visible) (0-999)
    // \param[in] value The new value.
-   void SetSpecularStrength( float value );
+	NIFLIB_API void SetSpecularStrength( float value );
 
    // Controls strength for envmap/backlight/rim/softlight lighting effect?
    // \return The current value.
-   float GetLightingEffect1() const;
+	NIFLIB_API float GetLightingEffect1() const;
 
    // Controls strength for envmap/backlight/rim/softlight lighting effect?
    // \param[in] value The new value.
-   void SetLightingEffect1( float value );
+	NIFLIB_API  void SetLightingEffect1( float value );
 
    // Controls strength for envmap/backlight/rim/softlight lighting effect?
    // \return The current value.
-   float GetLightingEffect2() const;
+	NIFLIB_API float GetLightingEffect2() const;
 
    // Controls strength for envmap/backlight/rim/softlight lighting effect?
    // \param[in] value The new value.
-   void SetLightingEffect2( float value );
+	NIFLIB_API  void SetLightingEffect2( float value );
 
    // Unknown.
    // \return The current value.
-   float GetSubsurfaceRolloff() const;
+	NIFLIB_API float GetSubsurfaceRolloff() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetSubsurfaceRolloff(float value);
+	NIFLIB_API  void SetSubsurfaceRolloff(float value);
 
    // Unknown.
    // \return The current value.
-   float GetUnknownFloat1() const;
+	NIFLIB_API float GetUnknownFloat1() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetUnknownFloat1(float value);
+	NIFLIB_API void SetUnknownFloat1(float value);
 
 	// Unknown.
    // \return The current value.
-   float GetBacklightPower() const;
+	NIFLIB_API float GetBacklightPower() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetBacklightPower(float value);
+	NIFLIB_API void SetBacklightPower(float value);
 
    // GrayscaleToPaletteScale
    // \return The current value.
-   float GetGrayscaleToPaletteScale() const;
+	NIFLIB_API float GetGrayscaleToPaletteScale() const;
 
    // GrayscaleToPaletteScale
    // \param[in] value The new value.
-   void SetGrayscaleToPaletteScale(float value);
+	NIFLIB_API void SetGrayscaleToPaletteScale(float value);
 
    // Fresnel Power
    // \return The current value.
-   float GetFresnelPower() const;
+	NIFLIB_API float GetFresnelPower() const;
 
    // Fresnel Power
    // \param[in] value The new value.
-   void SetFresnelPower(float value);
+	NIFLIB_API void SetFresnelPower(float value);
 
    // Unknown.
    // \return The current value.
-   float GetWetnessSpecScale() const;
+	NIFLIB_API float GetWetnessSpecScale() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetWetnessSpecScale(float value);
+	NIFLIB_API void SetWetnessSpecScale(float value);
 
    // Unknown.
    // \return The current value.
-   float GetWetnessSpecPower() const;
+	NIFLIB_API float GetWetnessSpecPower() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetWetnessSpecPower(float value);
+	NIFLIB_API void SetWetnessSpecPower(float value);
 
    // Unknown.
    // \return The current value.
-   float GetWetnessMinVar() const;
+	NIFLIB_API float GetWetnessMinVar() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetWetnessMinVar(float value);
+	NIFLIB_API void SetWetnessMinVar(float value);
 
    // Unknown.
    // \return The current value.
-   float GetWetnessEnvMapScale() const;
+	NIFLIB_API float GetWetnessEnvMapScale() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetWetnessEnvMapScale(float value);
+	NIFLIB_API void SetWetnessEnvMapScale(float value);
 
    // Unknown.
    // \return The current value.
-   float GetWetnessFresnelPower() const;
+	NIFLIB_API  float GetWetnessFresnelPower() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetWetnessFresnelPower(float value);
+	NIFLIB_API void SetWetnessFresnelPower(float value);
 
    // Unknown.
    // \return The current value.
-   float GetWetnessMetalness() const;
+	NIFLIB_API float GetWetnessMetalness() const;
 
    // Unknown.
    // \param[in] value The new value.
-   void SetWetnessMetalness(float value);
+	NIFLIB_API void SetWetnessMetalness(float value);
 
    // Scales the environment/cube map. (0-??)
    // \return The current value.
-   float GetEnvironmentMapScale() const;
+	NIFLIB_API float GetEnvironmentMapScale() const;
 
    // Scales the environment/cube map. (0-??)
    // \param[in] value The new value.
-   void SetEnvironmentMapScale( float value );
+	NIFLIB_API void SetEnvironmentMapScale( float value );
 
    // Tints the base texture. Overridden by game settings.
    // \return The current value.
-   Color3 GetSkinTintColor() const;
+	NIFLIB_API Color3 GetSkinTintColor() const;
 
    // Tints the base texture. Overridden by game settings.
    // \param[in] value The new value.
-   void SetSkinTintColor( const Color3 & value );
+	NIFLIB_API void SetSkinTintColor( const Color3 & value );
 
    // Tints the base texture. Overridden by game settings.
    // \return The current value.
-   Color3 GetHairTintColor() const;
+	NIFLIB_API Color3 GetHairTintColor() const;
 
    // Tints the base texture. Overridden by game settings.
    // \param[in] value The new value.
-   void SetHairTintColor( const Color3 & value );
+	NIFLIB_API void SetHairTintColor( const Color3 & value );
 
    // Max Passes
    // \return The current value.
-   float GetMaxPasses() const;
+	NIFLIB_API float GetMaxPasses() const;
 
    // Max Passes
    // \param[in] value The new value.
-   void SetMaxPasses( float value );
+	NIFLIB_API void SetMaxPasses( float value );
 
    // Scale
    // \return The current value.
-   float GetScale() const;
+	NIFLIB_API float GetScale() const;
 
    // Scale
    // \param[in] value The new value.
-   void SetScale( float value );
+	NIFLIB_API void SetScale( float value );
 
    // How far from the surface the inner layer appears to be.
    // \return The current value.
-   float GetParallaxInnerLayerThickness() const;
+	NIFLIB_API float GetParallaxInnerLayerThickness() const;
 
    // How far from the surface the inner layer appears to be.
    // \param[in] value The new value.
-   void SetParallaxInnerLayerThickness( float value );
+	NIFLIB_API  void SetParallaxInnerLayerThickness( float value );
 
    // Depth of inner parallax layer effect.
    // \return The current value.
-   float GetParallaxRefractionScale() const;
+	NIFLIB_API float GetParallaxRefractionScale() const;
 
    // Depth of inner parallax layer effect.
    // \param[in] value The new value.
-   void SetParallaxRefractionScale( float value );
+	NIFLIB_API  void SetParallaxRefractionScale( float value );
 
    // Scales the inner parallax layer texture.
    // \return The current value.
-   TexCoord GetParallaxInnerLayerTextureScale() const;
+	NIFLIB_API TexCoord GetParallaxInnerLayerTextureScale() const;
 
    // Scales the inner parallax layer texture.
    // \param[in] value The new value.
-   void SetParallaxInnerLayerTextureScale( const TexCoord & value );
+	NIFLIB_API void SetParallaxInnerLayerTextureScale( const TexCoord & value );
 
    // How strong the environment/cube map is. (0-??)
    // \return The current value.
-   float GetParallaxEnvmapStrength() const;
+	NIFLIB_API float GetParallaxEnvmapStrength() const;
 
    // How strong the environment/cube map is. (0-??)
    // \param[in] value The new value.
-   void SetParallaxEnvmapStrength( float value );
+	NIFLIB_API  void SetParallaxEnvmapStrength( float value );
 
    // Unknown/unused?  CK lists "snow material" when used.
    // \return The current value.
-   Vector4 GetSparkleParameters() const;
+	NIFLIB_API  Vector4 GetSparkleParameters() const;
 
    // Unknown/unused?  CK lists "snow material" when used.
    // \param[in] value The new value.
-   void SetSparkleParameters( const Vector4 & value );
+	NIFLIB_API void SetSparkleParameters( const Vector4 & value );
 
    // Eye cubemap scale
    // \return The current value.
-   float GetEyeCubemapScale() const;
+	NIFLIB_API float GetEyeCubemapScale() const;
 
    // Eye cubemap scale
    // \param[in] value The new value.
-   void SetEyeCubemapScale( float value );
+	NIFLIB_API void SetEyeCubemapScale( float value );
 
    // Offset to set center for left eye cubemap
    // \return The current value.
-   Vector3 GetLeftEyeReflectionCenter() const;
+	NIFLIB_API Vector3 GetLeftEyeReflectionCenter() const;
 
    // Offset to set center for left eye cubemap
    // \param[in] value The new value.
-   void SetLeftEyeReflectionCenter( const Vector3 & value );
+	NIFLIB_API  void SetLeftEyeReflectionCenter( const Vector3 & value );
 
    // Offset to set center for right eye cubemap
    // \return The current value.
-   Vector3 GetRightEyeReflectionCenter() const;
+	NIFLIB_API Vector3 GetRightEyeReflectionCenter() const;
 
    // Offset to set center for right eye cubemap
    // \param[in] value The new value.
-   void SetRightEyeReflectionCenter( const Vector3 & value );
+	NIFLIB_API void SetRightEyeReflectionCenter( const Vector3 & value );
 
 	//--END CUSTOM CODE--//
 protected:

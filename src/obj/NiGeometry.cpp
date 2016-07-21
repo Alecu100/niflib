@@ -832,8 +832,12 @@ void NiGeometry::SetBSProperty(int index, const NiPropertyRef&  value) {
 	bsProperties[index] = value;
 }
 
-#pragma endregion
+array<2, Ref<NiProperty>> NiGeometry::GetBSProperties()
+{
+	return bsProperties;
+}
 
+#pragma endregion
 
 void NiGeometry::SetSkinInstance(NiSkinInstance* value) {
 	skinInstance = value;

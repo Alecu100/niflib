@@ -49,6 +49,11 @@ struct Char8String : public std::string {
 typedef unsigned char	byte;
 #endif
 
+// Fallout 4 Declaration of half float
+#ifndef hfloat
+typedef unsigned short	hfloat;
+#endif
+
 //--Structures--//
 
 /*! 

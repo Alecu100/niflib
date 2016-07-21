@@ -299,6 +299,8 @@ public:
 	// \param[in] value The new value.
 	NIFLIB_API void SetBSProperty(int index, const Ref<NiProperty>&  value);
 
+	NIFLIB_API 	array<2, Ref<NiProperty>> GetBSProperties();
+
 	template <typename U>
 	inline Niflib::Ref<const U> GetBSPropertyOfType() const {
 		return StaticCast<const U>(GetBSPropertyOfType(U::TYPE));

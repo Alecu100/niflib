@@ -641,6 +641,19 @@ void BSLightingShaderProperty::SetRightEyeReflectionCenter( const Vector3 & valu
 ****End Example Naive Implementation***/
 
 //--BEGIN MISC CUSTOM CODE--//
+
+float BSLightingShaderProperty::GetGlossiness() const {
+	return glossiness;
+}
+
+void BSLightingShaderProperty::SetGlossiness(float value) {
+	glossiness = value;
+}
+
+void BSLightingShaderProperty::SetUVOffset(const TexCoord & value) {
+	uvOffset = value;
+}
+
 BSLightingShaderPropertyShaderType BSLightingShaderProperty::GetSkyrimShaderType() const {
 	return skyrimShaderType;
 }
