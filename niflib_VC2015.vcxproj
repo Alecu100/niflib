@@ -270,13 +270,14 @@
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDING_NIFLIB_DLL;WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <OutputFile>bin\niflib_x64.dll</OutputFile>
+      <OutputFile>$(SolutionDir)\..\Maya2016\bin\niflib_x64.dll</OutputFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <ImportLibrary>lib/niflib_dll.lib</ImportLibrary>
@@ -310,7 +311,7 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/FI"pch.h" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Gm /Zi /I "."  /D "_DEBUG" /c %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDING_NIFLIB_DLL;WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -324,11 +325,13 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <OutputFile>bin\niflib_debug_x64.dll</OutputFile>
+      <OutputFile>$(SolutionDir)..\Maya2016\bin\niflib_debug_x64.dll</OutputFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <ImportLibrary>lib/niflib_dll_debug_x64.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(SolutionDir)..\Maya2016\bin\niflib_debug_x64.pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -895,24 +898,6 @@
     <ClCompile Include="src\obj\TileShaderProperty.cpp" />
     <ClCompile Include="src\obj\VolumetricFogShaderProperty.cpp" />
     <ClCompile Include="src\obj\WaterShaderProperty.cpp" />
-    <ClCompile Include="src\pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug - DLL|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug - DLL|Win32'">pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug - DLL|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug - DLL|x64'">pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug - Static|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug - Static|Win32'">pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug - Static|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug - Static|x64'">pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - DLL|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release - DLL|Win32'">pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - DLL|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release - DLL|x64'">pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - Static|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release - Static|Win32'">pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - Static|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release - Static|x64'">pch.h</PrecompiledHeaderFile>
-    </ClCompile>
     <ClCompile Include="src\RefObject.cpp" />
     <ClCompile Include="src\Type.cpp" />
     <ClCompile Include="TriStripper\connectivity_graph.cpp" />

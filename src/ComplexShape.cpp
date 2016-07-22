@@ -22,8 +22,7 @@ All rights reserved.  Please see niflib.h for license. */
 #include "../include/obj/NiAlphaProperty.h"
 
 #include <stdlib.h>
-
-
+#include <array>
 
 
 using namespace Niflib;
@@ -579,87 +578,70 @@ void ComplexShape::Merge(NiAVObject * root) {
 						has_vertex_map = true;
 					}
 
-					for (unsigned int z = 0; z < partition_triangles.size(); z++) {
-						unsigned int w = faces.size() - shapeTris.size();
+					map<std::array<int, 3>, int> faces_indices;
 
-						int merged_x;
-						int merged_y;
-						int merged_z;
+					for (int z = 0; z < faces.size(); z++)
+					{
+						std::array<int, 3> current_face_indices;
+						current_face_indices[0] = faces[z].points[0].vertexIndex;
+						current_face_indices[1] = faces[z].points[1].vertexIndex;
+						current_face_indices[2] = faces[z].points[2].vertexIndex;
+						faces_indices[current_face_indices] = z;
+					}
+
+					for (unsigned int z = 0; z < partition_triangles.size(); z++) {
+						std::array<int, 3> current_combination;
+						std::array<int, 3> current_face_indices;
+
+						int partition_triangle_v1 = partition_triangles[z].v1;
+						int partition_triangle_v2 = partition_triangles[z].v2;
+						int partition_triangle_v3 = partition_triangles[z].v3;
+
+						int partition_vertex_map_v1 = partition_vertex_map[partition_triangle_v1];
+						int partition_vertex_map_v2 = partition_vertex_map[partition_triangle_v2];
+						int partition_vertex_map_v3 = partition_vertex_map[partition_triangle_v3];
+
 
 						if (has_vertex_map == true) {
-							merged_x = lookUp[partition_vertex_map[partition_triangles[z].v1]].vertIndex;
-							merged_y = lookUp[partition_vertex_map[partition_triangles[z].v2]].vertIndex;
-							merged_z = lookUp[partition_vertex_map[partition_triangles[z].v3]].vertIndex;
+							current_face_indices[0] = lookUp[partition_vertex_map_v1].vertIndex;
+							current_face_indices[1] = lookUp[partition_vertex_map_v2].vertIndex;
+							current_face_indices[2] = lookUp[partition_vertex_map_v3].vertIndex;
 						}
 						else {
-							merged_x = lookUp[partition_triangles[z].v1].vertIndex;
-							merged_y = lookUp[partition_triangles[z].v2].vertIndex;
-							merged_z = lookUp[partition_triangles[z].v3].vertIndex;
+							current_face_indices[0] = lookUp[partition_triangle_v1].vertIndex;
+							current_face_indices[1] = lookUp[partition_triangle_v2].vertIndex;
+							current_face_indices[2] = lookUp[partition_triangle_v3].vertIndex;
 						}
 
-						for (; w < faces.size(); w++) {
-							ComplexFace current_face = faces[w];
+						int found_main_face = 0;
 
-							//keep this commented code is case my theory that all triangles must have vertices arranged in a certain way and that you can't rearrange vertices in a triangle
+						for (int v1 = 0; v1 < 3 && found_main_face == 0; v1++)
+						{
+							for (int v2 = 0; v2 < 3 && found_main_face == 0; v2++)
+							{
+								for (int v3 = 0; v3 < 3 && found_main_face == 0; v3++)
+								{
+									if (v1 == v2 || v2 == v3 || v1 == v3)
+									{
+										continue;
+									}
+									
+									current_combination[v1] = current_face_indices[0];
+									current_combination[v2] = current_face_indices[1];
+									current_combination[v3] = current_face_indices[2];
 
-							/*if(current_face.points[0].vertexIndex == merged_x) {
-								if(current_face.points[1].vertexIndex == merged_y && current_face.points[2].vertexIndex == merged_z) {
-									is_same_face = true;
-									break;
-								} else if(current_face.points[2].vertexIndex == merged_y && current_face.points[1].vertexIndex == merged_z) {
-									is_same_face = true;
-									break;
+									if (faces_indices.find(current_combination) != faces_indices.end()) {
+										current_body_parts_faces[faces_indices[current_combination]] = y;
+										found_main_face = 1;
+									}
 								}
-							} else if(current_face.points[1].vertexIndex == merged_x) {
-								if(current_face.points[0].vertexIndex == merged_y && current_face.points[2].vertexIndex == merged_z) {
-									is_same_face = true;
-									break;
-								} else if(current_face.points[2].vertexIndex == merged_y && current_face.points[0].vertexIndex == merged_z) {
-									is_same_face = true;
-									break;
-								}
-							} else if(current_face.points[2].vertexIndex == merged_x) {
-								if(current_face.points[0].vertexIndex == merged_y && current_face.points[1].vertexIndex == merged_z) {
-									is_same_face = true;
-									break;
-								} else if(current_face.points[1].vertexIndex == merged_y && current_face.points[0].vertexIndex == merged_z) {
-									is_same_face = true;
-									break;
-								}
-							} */
-
-							if (current_face.points[0].vertexIndex == merged_x && current_face.points[1].vertexIndex == merged_y && current_face.points[2].vertexIndex == merged_z) {
-								break;
 							}
-						}
-
-						if (w - (faces.size() - shapeTris.size()) < shapeTris.size()) {
-							current_body_parts_faces[w - (faces.size() - shapeTris.size())] = y;
 						}
 					}
 				}
 
 				for (unsigned int y = 0; y < current_body_parts.size(); y++) {
-					int match_index = -1;
-
-					for (unsigned int z = 0; z < dismemberPartitionsBodyParts.size(); z++) {
-						if (dismemberPartitionsBodyParts[z].bodyPart == current_body_parts[y].bodyPart
-							&& dismemberPartitionsBodyParts[z].partFlag == current_body_parts[y].partFlag) {
-							match_index = z;
-							break;
-						}
-					}
-
-					if (match_index < 0) {
-						dismemberPartitionsBodyParts.push_back(current_body_parts[y]);
-						match_index = dismemberPartitionsBodyParts.size() - 1;
-					}
-
-					for (unsigned int z = 0; z < current_body_parts_faces.size(); z++) {
-						if (current_body_parts_faces[z] == y) {
-							current_body_parts_faces[z] = match_index;
-						}
-					}
+					dismemberPartitionsBodyParts.push_back(current_body_parts[y]);
 				}
 
 				for (unsigned int x = 0; x < current_body_parts_faces.size(); x++) {
