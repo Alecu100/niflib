@@ -909,405 +909,414 @@ inline void rotate(Triangle &t)
 }
 
 NiSkinPartition::NiSkinPartition(Ref<NiTriBasedGeom> shape, int maxBonesPerPartition, int maxBonesPerVertex, bool bStrippify, int* faceMap ) {
-   NiSkinInstanceRef skinInst = shape->GetSkinInstance();
-   if ( skinInst == NULL ) {
-      throw runtime_error( "You must bind a skin before setting generating skin partitions.  No NiSkinInstance found." );
-   }
-   NiSkinDataRef skinData = skinInst->GetSkinData();
-   if ( skinData == NULL ) {
-      throw runtime_error( "You must bind a skin before setting generating skin partitions.  No NiSkinData found." );
-   }
-   NiTriBasedGeomDataRef geomData = DynamicCast<NiTriBasedGeomData>(shape->GetData() );
-   if ( geomData == NULL ) {
-      throw runtime_error( "Attempted to generate a skin partition on a mesh with no geometry data." );
-   }
+	NiSkinInstanceRef skinInst = shape->GetSkinInstance();
+	if (skinInst == NULL) {
+		throw runtime_error("You must bind a skin before setting generating skin partitions.  No NiSkinInstance found.");
+	}
+	NiSkinDataRef skinData = skinInst->GetSkinData();
+	if (skinData == NULL) {
+		throw runtime_error("You must bind a skin before setting generating skin partitions.  No NiSkinData found.");
+	}
+	NiTriBasedGeomDataRef geomData = DynamicCast<NiTriBasedGeomData>(shape->GetData());
+	if (geomData == NULL) {
+		throw runtime_error("Attempted to generate a skin partition on a mesh with no geometry data.");
+	}
 
-      // read in the weights from NiSkinData
-   vector<Vector3> verts = geomData->GetVertices();
-   vector< BoneWeightList > weights;
-   if (verts.empty()){
-      throw runtime_error( "Attempted to generate a skin partition on a mesh with no vertices." );
-   }
+	// read in the weights from NiSkinData
+	vector<Vector3> verts = geomData->GetVertices();
+	vector< BoneWeightList > weights;
+	if (verts.empty()) {
+		throw runtime_error("Attempted to generate a skin partition on a mesh with no vertices.");
+	}
 
-   Triangles triangles = geomData->GetTriangles();
-   if (triangles.empty()) {
-      throw runtime_error( "Attempted to generate a skin partition on a mesh with no triangles." );
-   }
+	Triangles triangles = geomData->GetTriangles();
+	if (triangles.empty()) {
+		throw runtime_error("Attempted to generate a skin partition on a mesh with no triangles.");
+	}
 
-   int numVerts = int(verts.size());
-   weights.resize( numVerts );
-   int numBones = skinData->GetBoneCount();
-   for ( int bone = 0; bone < numBones; bone++ )
-   {
-      vector<SkinWeight> vertexWeights = skinData->GetBoneWeights(bone);
-      for (int r = 0; r < int(vertexWeights.size()); ++r ){
-         int vertex = vertexWeights[r].index;
-         float weight = vertexWeights[r].weight;
-         if ( vertex >= int(weights.size()) )
-            throw runtime_error( "bad NiSkinData - vertex count does not match" );
-         weights[vertex].insert( weights[vertex].end(), BoneWeight(bone, weight) );
-      }
-   }
+	int numVerts = int(verts.size());
+	weights.resize(numVerts);
+	int numBones = skinData->GetBoneCount();
+	for (int bone = 0; bone < numBones; bone++)
+	{
+		vector<SkinWeight> vertexWeights = skinData->GetBoneWeights(bone);
+		for (int r = 0; r < int(vertexWeights.size()); ++r) {
+			int vertex = vertexWeights[r].index;
+			float weight = vertexWeights[r].weight;
+			if (vertex >= int(weights.size()))
+				throw runtime_error("bad NiSkinData - vertex count does not match");
+			weights[vertex].insert(weights[vertex].end(), BoneWeight(bone, weight));
+		}
+	}
 
-   // count min and max bones per vertex
-   int minBones, maxBones;
-   minBones = maxBones = int(weights[0].size());
-   for(vector< BoneWeightList >::iterator itr = weights.begin(); itr != weights.end(); ++itr ){
-      int n = int((*itr).size());
-      minBones = min(n, minBones);
-      maxBones = max(n, maxBones);
-   }
+	// count min and max bones per vertex
+	int minBones, maxBones;
+	minBones = maxBones = int(weights[0].size());
+	for (vector< BoneWeightList >::iterator itr = weights.begin(); itr != weights.end(); ++itr) {
+		int n = int((*itr).size());
+		minBones = min(n, minBones);
+		maxBones = max(n, maxBones);
+	}
 
-   if ( minBones <= 0 )
-      throw runtime_error( "bad NiSkinData - some vertices have no weights at all" );
+	if (minBones <= 0)
+		throw runtime_error("bad NiSkinData - some vertices have no weights at all");
 
-   // reduce vertex influences if necessary
-   if ( maxBones > maxBonesPerVertex )
-   {
-      int c = 0;
-      for ( vector< BoneWeightList >::iterator it = weights.begin(); it != weights.end(); ++it )
-      {
-         BoneWeightList & lst = *it;
-         int n = int(lst.size());
-         if ( n > maxBonesPerVertex )
-         {
-            c++;
+	// reduce vertex influences if necessary
+	if (maxBones > maxBonesPerVertex)
+	{
+		int c = 0;
+		for (vector< BoneWeightList >::iterator it = weights.begin(); it != weights.end(); ++it)
+		{
+			BoneWeightList & lst = *it;
+			int n = int(lst.size());
+			if (n > maxBonesPerVertex)
+			{
+				c++;
 
-            BoneWeightList::iterator itr = lst.begin();
-            std::advance(itr, n);
-            while ( itr != lst.end() )
-               itr = lst.erase( itr );
-         }
+				BoneWeightList::iterator itr = lst.begin();
+				std::advance(itr, n);
+				while (itr != lst.end())
+					itr = lst.erase(itr);
+			}
 
-         float totalWeight = 0;
-         for (BoneWeightList::iterator bw = lst.begin(); bw != lst.end(); ++bw) {
-            totalWeight += (*bw).second;
-         }
-         for (BoneWeightList::iterator bw = lst.begin(); bw != lst.end(); ++bw) {
-            (*bw).second /= totalWeight;
-         }
-      }
-      //qWarning() << "reduced" << c << "vertices to" << maxBonesPerVertex << "bone influences (maximum number of bones per vertex was" << maxBones << ")";
-   }
+			float totalWeight = 0;
+			for (BoneWeightList::iterator bw = lst.begin(); bw != lst.end(); ++bw) {
+				totalWeight += (*bw).second;
+			}
+			for (BoneWeightList::iterator bw = lst.begin(); bw != lst.end(); ++bw) {
+				(*bw).second /= totalWeight;
+			}
+		}
+		//qWarning() << "reduced" << c << "vertices to" << maxBonesPerVertex << "bone influences (maximum number of bones per vertex was" << maxBones << ")";
+	}
 
-   maxBones = maxBonesPerVertex;
+	maxBones = maxBonesPerVertex;
 
-   // reduces bone weights so that the triangles fit into the partitions
+	// reduces bone weights so that the triangles fit into the partitions
 
-   typedef multimap<int,int> matchmap;
-   typedef pair<matchmap::iterator, matchmap::iterator> matchrange;
-   matchmap match;
-   bool doMatch = true;
+	typedef multimap<int, int> matchmap;
+	typedef pair<matchmap::iterator, matchmap::iterator> matchrange;
+	matchmap match;
+	bool doMatch = true;
 
-   BoneList tribones;
-   int cnt = 0;
-   for (Triangles::iterator itr = triangles.begin(); itr != triangles.end(); ++itr) {
-      Triangle& tri = (*itr);
-      do
-      {
-         tribones.clear();
-         for ( int c = 0; c < 3; c++ ) {
-            BoneWeightList& bwl = weights[tri[c]];
-            for (BoneWeightList::iterator bw = bwl.begin(); bw != bwl.end(); ++bw) {
-               if ( tribones.end() == find(tribones.begin(), tribones.end(), (*bw).first ) )
-                  tribones.insert(tribones.end(), (*bw).first );
-            }
-         }
+	BoneList tribones;
+	int cnt = 0;
 
-         if ( int(tribones.size()) > maxBonesPerPartition )
-         {
-            // sum up the weights for each bone
-            // bones with weight == 1 can't be removed
+	// do a vertex match detect
+	if (doMatch) {
+		for (int a = 0; a < int(verts.size()); a++) {
+			match.insert(matchmap::value_type(a, a));
+			for (int b = a + 1; b < int(verts.size()); b++) {
+				if (verts[a] == verts[b] && weights[a] == weights[b]) {
+					match.insert(matchmap::value_type(a, b));
+					match.insert(matchmap::value_type(b, a));
+				}
+			}
+		}
+	}
 
-            map<int, float> sum;
-            vector<int> nono;
 
-            for ( int t = 0; t < 3; t++ ) {
-               BoneWeightList& bwl = weights[tri[t]];
-               if ( bwl.size() == 1 )
-                  nono.insert(nono.end(), bwl.front().first );
+	for (int index = 0; index < triangles.size(); index++) {
+		Triangle& tri = triangles[index];
 
-               for (BoneWeightList::iterator bw = bwl.begin(); bw != bwl.end(); ++bw) {
-                  sum[ (*bw).first ] += (*bw).second;
-               }                 
-            }
+		tribones.clear();
+		for (int c = 0; c < 3; c++) {
+			BoneWeightList& bwl = weights[tri[c]];
+			for (BoneWeightList::iterator bw = bwl.begin(); bw != bwl.end(); ++bw) {
+				if (tribones.end() == find(tribones.begin(), tribones.end(), (*bw).first))
+					tribones.insert(tribones.end(), (*bw).first);
+			}
+		}
 
-            // select the bone to remove
+		int excess_bones = int(tribones.size()) - maxBonesPerPartition;
 
-            float minWeight = 5.0;
-            int minBone = -1;
+		if (excess_bones > 0)
+		{
+			for (int bone_index = 0; bone_index < excess_bones; bone_index++)
+			{
+				// sum up the weights for each bone
+				// bones with weight == 1 can't be removed
 
-            for (map<int, float>::iterator sitr = sum.begin(); sitr != sum.end(); ++sitr) {
-               int b = (*sitr).first;
-               if ( (find(nono.begin(), nono.end(), b) == nono.end()) && sum[b] < minWeight) {
-                  minWeight = sum[b];
-                  minBone = b;
-               }
-            }
+				map<int, float> sum;
+				vector<int> nono;
 
-            if ( minBone < 0 )	// this shouldn't never happen
-               throw runtime_error( "internal error 0x01" );
+				for (int t = 0; t < 3; t++) {
+					BoneWeightList& bwl = weights[tri[t]];
+					if (bwl.size() == 1)
+						nono.insert(nono.end(), bwl.front().first);
 
-            // do a vertex match detect
-            if ( doMatch ) {
-               for ( int a = 0; a < int(verts.size()); a++ ) {
-                  match.insert(matchmap::value_type(a, a));
-                  for ( int b = a + 1; b < int(verts.size()); b++ ) {
-                     if ( verts[a] == verts[b] && weights[a] == weights[b] ) {
-                        match.insert(matchmap::value_type(a, b));
-                        match.insert(matchmap::value_type(b, a));
-                     }
-                  }
-               }
-            }
+					for (BoneWeightList::iterator bw = bwl.begin(); bw != bwl.end(); ++bw) {
+						sum[(*bw).first] += (*bw).second;
+					}
+				}
 
-            // now remove that bone from all vertices of this triangle and from all matching vertices too
-            for ( int t = 0; t < 3; t++ ) {
-               bool rem = false;
+				// select the bone to remove
 
-               matchrange range = match.equal_range(tri[t]);
-               for (matchmap::iterator itr = range.first; itr != range.second; ++itr) {
-                  int v = (*itr).second;
+				float minWeight = 5.0;
+				int minBone = -1;
 
-                  BoneWeightList & bws = weights[ v ];
-                  BoneWeightList::iterator it = bws.begin();
-                  while ( it != bws.end() ) {
-                     BoneWeight & bw = *it;
-                     if ( bw.first == minBone ) {
-                        it = bws.erase(it);
-                        rem = true;
-                     } else {
-                        ++it;
-                     }
-                  }
+				for (map<int, float>::iterator sitr = sum.begin(); sitr != sum.end(); ++sitr) {
+					int b = (*sitr).first;
+					if ((find(nono.begin(), nono.end(), b) == nono.end()) && sum[b] < minWeight) {
+						minWeight = sum[b];
+						minBone = b;
+					}
+				}
 
-                  float totalWeight = 0;
+				if (minBone < 0)	// this shouldn't never happen
+					throw runtime_error("internal error 0x01");
 
-                  for (BoneWeightList::iterator bw = bws.begin(); bw != bws.end(); ++bw) {
-                     totalWeight += (*bw).second;
-                  }
+				// now remove that bone from all vertices of this triangle and from all matching vertices too
+				for (int t = 0; t < 3; t++) {
+					bool rem = false;
 
-                  if ( totalWeight == 0 )
-                     throw runtime_error( "internal error 0x02" );
+					matchrange range = match.equal_range(tri[t]);
+					for (matchmap::iterator itr = range.first; itr != range.second; ++itr) {
+						int v = (*itr).second;
 
-                  // normalize
-                  for (BoneWeightList::iterator bw = bws.begin(); bw != bws.end(); ++bw) {
-                     (*bw).second /= totalWeight;
-                  }
-               }
-               if ( rem )
-                  cnt++;
-            }
-         }
-      } while ( int(tribones.size()) > maxBonesPerPartition );
-   }
-   //if ( cnt > 0 )
-   //   qWarning() << "removed" << cnt << "bone influences";
+						BoneWeightList & bws = weights[v];
+						BoneWeightList::iterator it = bws.begin();
+						while (it != bws.end()) {
+							BoneWeight & bw = *it;
+							if (bw.first == minBone) {
+								it = bws.erase(it);
+								rem = true;
+							}
+							else {
+								++it;
+							}
+						}
 
-   PartitionList& parts = skinPartitionBlocks;
+						float totalWeight = 0;
 
-   bool merge = true;
-   // Use Explicit face mapping
-   if (faceMap) {
-      Triangles::iterator it = triangles.begin();
-      for (int idx = 0, n = triangles.size(); idx<n; ++idx ){
-         int partIdx = faceMap[idx];
-         if (partIdx < 0)
-            partIdx = 0;
+						for (BoneWeightList::iterator bw = bws.begin(); bw != bws.end(); ++bw) {
+							totalWeight += (*bw).second;
+						}
 
-         Triangle & tri = *it;
+						if (totalWeight == 0)
+							throw runtime_error("internal error 0x02");
 
-         // Ensure enough partitions
-         while ( partIdx >= int(parts.size()) )
-            parts.push_back( SkinPartition() );
+						// normalize
+						for (BoneWeightList::iterator bw = bws.begin(); bw != bws.end(); ++bw) {
+							(*bw).second /= totalWeight;
+						}
+					}
+					if (rem)
+						cnt++;
+				}
+			}
+		}
+	}
 
-         SkinPartition& part = parts[partIdx];
-         BoneList tribones;
-         for ( int c = 0; c < 3; c++ ) {
-            BoneWeightList& bws = weights[tri[c]];
-            for (BoneWeightList::iterator bw = bws.begin(); bw != bws.end(); ++bw) {
-               if ( tribones.end() == find(tribones.begin(), tribones.end(), (*bw).first ) )
-                  tribones.push_back( (*bw).first );
-            }
-         }
-         mergeBones( part.bones, tribones );
-         part.triangles.push_back( tri );
-         it = triangles.erase(it); // delete triangle so it is not use later
-      }
-      merge = false; // when explicit mapping enabled, no merging is allowed
-   }
 
-   // split the triangles into partitions
-   while ( ! triangles.empty() ) {
+	//if ( cnt > 0 )
+	//   qWarning() << "removed" << cnt << "bone influences";
 
-      SkinPartition part;
-      Triangles::iterator it = triangles.begin();
-      while ( it != triangles.end() ) {
-         Triangle & tri = *it;
+	PartitionList& parts = skinPartitionBlocks;
 
-         BoneList tribones;
-         for ( int c = 0; c < 3; c++ ) {
-            BoneWeightList& bws = weights[tri[c]];
-            for (BoneWeightList::iterator bw = bws.begin(); bw != bws.end(); ++bw) {
-               if ( tribones.end() == find(tribones.begin(), tribones.end(), (*bw).first ) )
-                  tribones.push_back( (*bw).first );
-            }
-         }
+	bool merge = true;
+	// Use Explicit face mapping
+	if (faceMap) {
+		Triangles::iterator it = triangles.begin();
+		for (int idx = 0, n = triangles.size(); idx<n; ++idx) {
+			int partIdx = faceMap[idx];
+			if (partIdx < 0)
+				partIdx = 0;
 
-         if ( part.bones.empty() || containsBones( part.bones, tribones ) ) {
-            mergeBones( part.bones, tribones );
-            part.triangles.push_back( tri );
-            it = triangles.erase(it);
-         } else {
-            ++it;
-         }
-      }
+			Triangle & tri = *it;
 
-      parts.push_back( part );
-   }
+			// Ensure enough partitions
+			while (partIdx >= int(parts.size()))
+				parts.push_back(SkinPartition());
 
-   //qWarning() << parts.size() << "small partitions";
+			SkinPartition& part = parts[partIdx];
+			BoneList tribones;
+			for (int c = 0; c < 3; c++) {
+				BoneWeightList& bws = weights[tri[c]];
+				for (BoneWeightList::iterator bw = bws.begin(); bw != bws.end(); ++bw) {
+					if (tribones.end() == find(tribones.begin(), tribones.end(), (*bw).first))
+						tribones.push_back((*bw).first);
+				}
+			}
+			mergeBones(part.bones, tribones);
+			part.triangles.push_back(tri);
+			it = triangles.erase(it); // delete triangle so it is not use later
+		}
+		merge = false; // when explicit mapping enabled, no merging is allowed
+	}
 
-   // merge partitions
+	// split the triangles into partitions
+	while (!triangles.empty()) {
 
-   while (merge)
-   {
-      merge = false;
-      // Working backwards through this list minimizes numbers of swaps
-      //for ( int p2 = int(parts.size()-1); p2 >= 0  && ! merge; --p2 )
-      //{
-      //   Partition& part2 = parts[p2];
-      //   for ( int p1 = int(p2-1); p1 >= 0 && ! merge; --p1 )
-      //   {
-      //      Partition& part1 = parts[p1];
-      for ( int p1 = 0; p1 < int(parts.size()) && ! merge; p1++ )
-      {
-         Partition& part1 = parts[p1];
-         for ( int p2 = p1+1; p2 < int(parts.size()) && ! merge; p2++ )
-         {
-            Partition& part2 = parts[p2];
-            BoneList mergedBones = part1.bones;
-            mergeBones( mergedBones, part2.bones );
-            if ( int(mergedBones.size()) <= maxBonesPerPartition )
-            {
-               PartitionList::iterator p2i = parts.begin() + p2;
-               part1.bones = mergedBones;
-               part1.triangles.insert(part1.triangles.end(), (*p2i).triangles.begin(), (*p2i).triangles.end());
-               parts.erase(p2i);
-               merge = true;
-            }
-         }
-      }
-   }
+		SkinPartition part;
+		Triangles::iterator it = triangles.begin();
+		while (it != triangles.end()) {
+			Triangle & tri = *it;
 
-   //qWarning() << parts.size() << "partitions";
+			BoneList tribones;
+			for (int c = 0; c < 3; c++) {
+				BoneWeightList& bws = weights[tri[c]];
+				for (BoneWeightList::iterator bw = bws.begin(); bw != bws.end(); ++bw) {
+					if (tribones.end() == find(tribones.begin(), tribones.end(), (*bw).first))
+						tribones.push_back((*bw).first);
+				}
+			}
 
-   // start writing NiSkinPartition
+			if (part.bones.empty() || containsBones(part.bones, tribones)) {
+				mergeBones(part.bones, tribones);
+				part.triangles.push_back(tri);
+				it = triangles.erase(it);
+			}
+			else {
+				++it;
+			}
+		}
 
-   for ( int p = 0; p < int(parts.size()); p++ )
-   {
-      Partition& part = parts[p];
-      BoneList& bones = part.bones;
-      sort( bones.begin(), bones.end() );
+		parts.push_back(part);
+	}
 
-      Triangles& triangles = part.triangles;
+	//qWarning() << parts.size() << "small partitions";
 
-      vector<unsigned short>& vertices = part.vertexMap;
+	// merge partitions
 
-      // Create the vertex map
+	while (merge)
+	{
+		merge = false;
+		// Working backwards through this list minimizes numbers of swaps
+		//for ( int p2 = int(parts.size()-1); p2 >= 0  && ! merge; --p2 )
+		//{
+		//   Partition& part2 = parts[p2];
+		//   for ( int p1 = int(p2-1); p1 >= 0 && ! merge; --p1 )
+		//   {
+		//      Partition& part1 = parts[p1];
+		for (int p1 = 0; p1 < int(parts.size()) && !merge; p1++)
+		{
+			Partition& part1 = parts[p1];
+			for (int p2 = p1 + 1; p2 < int(parts.size()) && !merge; p2++)
+			{
+				Partition& part2 = parts[p2];
+				BoneList mergedBones = part1.bones;
+				mergeBones(mergedBones, part2.bones);
+				if (int(mergedBones.size()) <= maxBonesPerPartition)
+				{
+					PartitionList::iterator p2i = parts.begin() + p2;
+					part1.bones = mergedBones;
+					part1.triangles.insert(part1.triangles.end(), (*p2i).triangles.begin(), (*p2i).triangles.end());
+					parts.erase(p2i);
+					merge = true;
+				}
+			}
+		}
+	}
 
-      int idx = 0;
-      vector<int> vidx(numVerts, -1);
-      for( Triangles::iterator tri = triangles.begin(); tri !=  triangles.end(); ++tri) {
-         for ( int t = 0; t < 3; t++ ) {
-            int v = (*tri)[t];
-            if ( vidx[v] < 0)
-               vidx[v] = idx++;
-         }
-      }
-      vertices.assign(idx, -1);
-      for (int i = 0; i < numVerts; ++i) {
-         int v = vidx[i];
-         if (v >= 0) {
-            vertices[v] = i;
-         }
-      }
+	//qWarning() << parts.size() << "partitions";
 
-      for( Triangles::iterator tri = triangles.begin(); tri !=  triangles.end(); ++tri) {
-         for ( int t = 0; t < 3; t++ ) {
-            if ( vertices.end() == find(vertices.begin(), vertices.end(), (*tri)[t] ) )
-               vertices.push_back( (*tri)[t] );
-         }
-      }
+	// start writing NiSkinPartition
 
-      part.numVertices = int(vertices.size());
-      part.hasVertexMap = true;
+	for (int p = 0; p < int(parts.size()); p++)
+	{
+		Partition& part = parts[p];
+		BoneList& bones = part.bones;
+		sort(bones.begin(), bones.end());
 
-      // map the vertices
+		Triangles& triangles = part.triangles;
 
-      for ( int tri = 0; tri < int(triangles.size()); tri++ ) {
-         for ( int t = 0; t < 3; t++ ) {
-            triangles[tri][t] = (int)indexOf(vertices.begin(), vertices.end(), triangles[tri][t]);
-         }
-      }
+		vector<unsigned short>& vertices = part.vertexMap;
 
-      SetWeightsPerVertex(p, maxBones);
-      EnableVertexWeights(p, true);
-      EnableVertexBoneIndices(p, true);
+		// Create the vertex map
 
-      // strippify the triangles
-      if (bStrippify)
-      {
-         NiTriStripsDataRef data = new NiTriStripsData(triangles, true);
-         int nstrips = data->GetStripCount();
-         SetStripCount( p, nstrips );
-         for ( int i=0; i<nstrips; ++i ) {
-            SetStrip(p, i, data->GetStrip(i));
-         }
-      }
-      else
-      {
-         SetTriangles(p, triangles);
-      }
+		int idx = 0;
+		vector<int> vidx(numVerts, -1);
+		for (Triangles::iterator tri = triangles.begin(); tri != triangles.end(); ++tri) {
+			for (int t = 0; t < 3; t++) {
+				int v = (*tri)[t];
+				if (vidx[v] < 0)
+					vidx[v] = idx++;
+			}
+		}
+		vertices.assign(idx, -1);
+		for (int i = 0; i < numVerts; ++i) {
+			int v = vidx[i];
+			if (v >= 0) {
+				vertices[v] = i;
+			}
+		}
 
-      //// Special case for pre-stripped data
-      //unsigned short *data = new unsigned short[triangles.size() * 3 * 2];
-      //for (size_t i=0; i< triangles.size(); i++) {
-      //   data[i * 3 + 0] = triangles[i][0];
-      //   data[i * 3 + 1] = triangles[i][1];
-      //   data[i * 3 + 2] = triangles[i][2];
-      //}
-      //PrimitiveGroup * groups = 0;
-      //unsigned short numGroups = 0;
+		for (Triangles::iterator tri = triangles.begin(); tri != triangles.end(); ++tri) {
+			for (int t = 0; t < 3; t++) {
+				if (vertices.end() == find(vertices.begin(), vertices.end(), (*tri)[t]))
+					vertices.push_back((*tri)[t]);
+			}
+		}
 
-      //// GF 3+
-      //SetCacheSize(CACHESIZE_GEFORCE3);
-      //// don't generate hundreds of strips
-      //SetStitchStrips(true);
-      //GenerateStrips(data, triangles.size()*3, &groups, &numGroups);
-      //delete [] data;
-      //if (groups) {
-      //   SetStripCount(p, numGroups);
-      //   for (int g=0; g<numGroups; g++) {
-      //      if (groups[g].type == PT_STRIP) {
-      //         vector<Niflib::unsigned short> strip(groups[g].numIndices);
-      //         for (size_t s=0; s<groups[g].numIndices; s++)
-      //            strip[s] = groups[g].indices[s];
-      //         SetStrip(p, g, strip);
-      //      }
-      //   }
-      //   delete [] groups;
-      //}
+		part.numVertices = int(vertices.size());
+		part.hasVertexMap = true;
 
-      // fill in vertex weights and bones
-      for (size_t v = 0; v < vertices.size(); ++v) {
-         BoneWeightList& bwl = weights[vertices[v]];
-         sort(bwl.begin(), bwl.end(), std::less<BoneWeight>());
-         for ( int b = 0; b < maxBones; b++ ) {
-            part.boneIndices[v][b] = (int(bwl.size()) > b) ? (int)indexOf(bones.begin(), bones.end(), bwl[b].first) : 0 ;
-            part.vertexWeights[v][b] = (int(bwl.size()) > b ? bwl[b].second : 0.0f);
-         }
-      }
+		// map the vertices
+
+		for (int tri = 0; tri < int(triangles.size()); tri++) {
+			for (int t = 0; t < 3; t++) {
+				triangles[tri][t] = (int)indexOf(vertices.begin(), vertices.end(), triangles[tri][t]);
+			}
+		}
+
+		SetWeightsPerVertex(p, maxBones);
+		EnableVertexWeights(p, true);
+		EnableVertexBoneIndices(p, true);
+
+		// strippify the triangles
+		if (bStrippify)
+		{
+			NiTriStripsDataRef data = new NiTriStripsData(triangles, true);
+			int nstrips = data->GetStripCount();
+			SetStripCount(p, nstrips);
+			for (int i = 0; i<nstrips; ++i) {
+				SetStrip(p, i, data->GetStrip(i));
+			}
+		}
+		else
+		{
+			SetTriangles(p, triangles);
+		}
+
+		//// Special case for pre-stripped data
+		//unsigned short *data = new unsigned short[triangles.size() * 3 * 2];
+		//for (size_t i=0; i< triangles.size(); i++) {
+		//   data[i * 3 + 0] = triangles[i][0];
+		//   data[i * 3 + 1] = triangles[i][1];
+		//   data[i * 3 + 2] = triangles[i][2];
+		//}
+		//PrimitiveGroup * groups = 0;
+		//unsigned short numGroups = 0;
+
+		//// GF 3+
+		//SetCacheSize(CACHESIZE_GEFORCE3);
+		//// don't generate hundreds of strips
+		//SetStitchStrips(true);
+		//GenerateStrips(data, triangles.size()*3, &groups, &numGroups);
+		//delete [] data;
+		//if (groups) {
+		//   SetStripCount(p, numGroups);
+		//   for (int g=0; g<numGroups; g++) {
+		//      if (groups[g].type == PT_STRIP) {
+		//         vector<Niflib::unsigned short> strip(groups[g].numIndices);
+		//         for (size_t s=0; s<groups[g].numIndices; s++)
+		//            strip[s] = groups[g].indices[s];
+		//         SetStrip(p, g, strip);
+		//      }
+		//   }
+		//   delete [] groups;
+		//}
+
+		// fill in vertex weights and bones
+		for (size_t v = 0; v < vertices.size(); ++v) {
+			BoneWeightList& bwl = weights[vertices[v]];
+			sort(bwl.begin(), bwl.end(), std::less<BoneWeight>());
+			for (int b = 0; b < maxBones; b++) {
+				part.boneIndices[v][b] = (int(bwl.size()) > b) ? (int)indexOf(bones.begin(), bones.end(), bwl[b].first) : 0;
+				part.vertexWeights[v][b] = (int(bwl.size()) > b ? bwl[b].second : 0.0f);
+			}
+		}
    }
 }
 
