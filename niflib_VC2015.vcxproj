@@ -338,6 +338,7 @@
     <ClCompile Include="NvTriStrip\NvTriStrip.cpp" />
     <ClCompile Include="NvTriStrip\NvTriStripObjects.cpp" />
     <ClCompile Include="NvTriStrip\VertexCache.cpp" />
+    <ClCompile Include="src\BSComplexShape.cpp" />
     <ClCompile Include="src\ComplexShape.cpp" />
     <ClCompile Include="src\gen\AdditionalDataBlock.cpp" />
     <ClCompile Include="src\gen\AdditionalDataInfo.cpp" />
@@ -905,7 +906,9 @@
     <ClCompile Include="TriStripper\tri_stripper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\BSComplexShape.h" />
     <ClInclude Include="include\ComplexShape.h" />
+    <ClInclude Include="include\ComplexShapesTypes.h" />
     <ClInclude Include="include\dll_export.h" />
     <ClInclude Include="include\FixLink.h" />
     <ClInclude Include="include\gen\AdditionalDataBlock.h" />

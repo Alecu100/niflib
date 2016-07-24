@@ -108,4 +108,15 @@ void BSVertexData::SetBoneWeight(int idx, int bone, float weight)
 	boneIndices[idx] = byte(bone);
 	boneWeights[idx] = ConvertFloatToHFloat(weight);
 }
+
+float BSVertexData::GetBoneWeight(int idx)
+{
+	return ConvertHFloatToFloat(boneWeights[idx]);
+}
+
+int BSVertexData::GetBoneIndex(int idx)
+{
+	return boneIndices[idx];
+}
+
 //--END CUSTOM CODE--//

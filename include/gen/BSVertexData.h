@@ -57,9 +57,9 @@ struct BSVertexData {
 	/*! Unknown. */
 	unsigned int unknownInt2;
 	//--BEGIN MISC CUSTOM CODE--//
-	void Clear();
+	NIFLIB_API void Clear();
 
-	Vector3 GetVertex() const;
+	NIFLIB_API Vector3 GetVertex() const;
 
 	void SetVertex(const Vector3& v);
 	void SetNormal(const Vector3& n);
@@ -68,6 +68,8 @@ struct BSVertexData {
 	void SetTangent(const Vector3& t);
 	void SetBitangent(const Vector3& b);
 	void SetBoneWeight(int idx, int bone, float weight);
+	float GetBoneWeight(int idx);
+	int GetBoneIndex(int idx);
 
 	//--END CUSTOM CODE--//
 };

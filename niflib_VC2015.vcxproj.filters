@@ -1746,6 +1746,9 @@
     <ClCompile Include="src\gen\BSSITSSubSegment.cpp">
       <Filter>Source Files\gen</Filter>
     </ClCompile>
+    <ClCompile Include="src\BSComplexShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ComplexShape.h">
@@ -3493,6 +3496,12 @@
     </ClInclude>
     <ClInclude Include="include\gen\BSSITSSubSegment.h">
       <Filter>Header Files\gen</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BSComplexShape.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ComplexShapesTypes.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
