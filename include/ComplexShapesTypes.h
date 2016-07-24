@@ -178,14 +178,14 @@ namespace Niflib
 
 	struct SubSegment
 	{
-		unsigned int triangleOffset;
-		unsigned int triangleCount;
+		unsigned int polygonOffset;
+		unsigned int polygonCount;
 	};
 
 	struct Segment
 	{
-		unsigned int triangleOffset;
-		unsigned int triangleCount;
+		unsigned int polygonOffset;
+		unsigned int polygonCount;
 		vector<SubSegment> subSegments;
 	};
 }

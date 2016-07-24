@@ -310,15 +310,11 @@ void BSComplexShape::Merge(NiAVObject* root)
 		//Get properties of this shape
 		propGroups[prop_group_index] = current_property_group;
 
+		vector<Color4> shapeColors;
+		vector<Vector3> shapeNorms;
 		vector<Vector3> shapeVerts = bsTriShape->GetVertices();
-		vector<Vector3> shapeNorms = bsTriShape->GetNormals();
-
-
-		vector<Color4> shapeColors = bsTriShape->GetColors();
 		vector<TexCoord> shapeUV = bsTriShape->GetUVSet();
-
 		vector<Triangle> shapeTris = bsTriShape->GetTriangles();
-
 		vector<MergeLookUp> merged_vertex_indexes(bsTriShape->GetVertexCount());
 
 		//Vertices and normals
@@ -327,80 +323,81 @@ void BSComplexShape::Merge(NiAVObject* root)
 			has_any_verts = true;
 		}
 
-		bool shape_has_norms = (shapeNorms.size() == shapeVerts.size());
-
-		if (shape_has_norms)
+		if (bsTriShape->HasNormals())
 		{
-			has_any_norms = true;
-		}
-		for (unsigned int v = 0; v < shapeVerts.size(); ++v)
-		{
-			VertNorm newVert;
+			shapeNorms = bsTriShape->GetNormals();
 
-			newVert.position = shapeVerts[v];
-			if (shape_has_norms)
+			for (unsigned int v = 0; v < shapeVerts.size(); ++v)
 			{
+				VertNorm newVert;
+
+				newVert.position = shapeVerts[v];
 				newVert.normal = shapeNorms[v];
-			}
 
-			//Search for matching vert/norm
-			bool match_found = false;
-			for (unsigned int vn_index = 0; vn_index < vns.size(); ++vn_index)
-			{
-				if (vns[vn_index] == newVert)
+				//Search for matching vert/norm
+				bool match_found = false;
+				for (unsigned int vn_index = 0; vn_index < vns.size(); ++vn_index)
 				{
-					//Match found, use existing index
-					merged_vertex_indexes[v].vertIndex = vn_index;
+					if (vns[vn_index] == newVert)
+					{
+						//Match found, use existing index
+						merged_vertex_indexes[v].vertIndex = vn_index;
+						if (shapeNorms.size() != 0)
+						{
+							merged_vertex_indexes[v].normIndex = vn_index;
+						}
+						match_found = true;
+						//Stop searching
+						break;
+					}
+				}
+
+				if (match_found == false)
+				{
+					//No match found, add this vert/norm to the list
+					vns.push_back(newVert);
+					//Record new index
+					merged_vertex_indexes[v].vertIndex = (unsigned int)(vns.size()) - 1;
 					if (shapeNorms.size() != 0)
 					{
-						merged_vertex_indexes[v].normIndex = vn_index;
+						merged_vertex_indexes[v].normIndex = (unsigned int)(vns.size()) - 1;
 					}
-					match_found = true;
-					//Stop searching
-					break;
-				}
-			}
-
-			if (match_found == false)
-			{
-				//No match found, add this vert/norm to the list
-				vns.push_back(newVert);
-				//Record new index
-				merged_vertex_indexes[v].vertIndex = (unsigned int)(vns.size()) - 1;
-				if (shapeNorms.size() != 0)
-				{
-					merged_vertex_indexes[v].normIndex = (unsigned int)(vns.size()) - 1;
 				}
 			}
 		}
 
 		//Colors
-		for (unsigned int c = 0; c < shapeColors.size(); ++c)
+		if (bsTriShape->HasColors())
 		{
-			Color4 newColor;
+			shapeColors = bsTriShape->GetColors();
 
-			newColor = shapeColors[c];
-
-			//Search for matching color
-			bool match_found = false;
-			for (unsigned int c_index = 0; c_index < colors.size(); ++c_index)
+			for (unsigned int c = 0; c < shapeColors.size(); ++c)
 			{
-				if (colors[c_index].r == newColor.r && colors[c_index].g == newColor.g && colors[c_index].b == newColor.b && colors[c_index].a == newColor.a)
+				Color4 newColor;
+
+				newColor = shapeColors[c];
+
+				//Search for matching color
+				bool match_found = false;
+				for (unsigned int c_index = 0; c_index < colors.size(); ++c_index)
 				{
-					//Match found, use existing index
-					merged_vertex_indexes[c].colorIndex = c_index;
-					match_found = true;
-					//Stop searching
-					break;
+					if (colors[c_index].r == newColor.r && colors[c_index].g == newColor.g && colors[c_index].b == newColor.b && colors[c_index].a == newColor.a)
+					{
+						//Match found, use existing index
+						merged_vertex_indexes[c].colorIndex = c_index;
+						match_found = true;
+						//Stop searching
+						break;
+					}
 				}
-			}
 
-			if (match_found == false)
-			{
-				//No match found, add this color to the list
-				colors.push_back(newColor);
-				//Record new index
-				merged_vertex_indexes[c].colorIndex = (unsigned int)(colors.size()) - 1;
+				if (match_found == false)
+				{
+					//No match found, add this color to the list
+					colors.push_back(newColor);
+					//Record new index
+					merged_vertex_indexes[c].colorIndex = (unsigned int)(colors.size()) - 1;
+				}
 			}
 		}
 
@@ -515,21 +512,30 @@ void BSComplexShape::Merge(NiAVObject* root)
 			BSSubIndexTriShapeRef bsSubIndexShape = DynamicCast<BSSubIndexTriShape>(bsTriShape);
 			const vector<BSSITSSegment> bssits_segments = bsSubIndexShape->GetSegments();
 
+			unsigned int previous_polygon_offset = 0;
+
+			if (segments.size() > 0)
+			{
+				previous_polygon_offset = segments[segments.size() - 1].polygonCount + segments[segments.size() - 1].polygonOffset;
+			}
+
 			for (int segment_index = 0; segment_index < bssits_segments.size(); segment_index++)
 			{
 				Segment current_segment;
-				current_segment.triangleCount = bssits_segments[segment_index].triangleCount;
-				current_segment.triangleOffset = bssits_segments[segment_index].triangleOffset;
+				current_segment.polygonCount = bssits_segments[segment_index].triangleCount;
+				current_segment.polygonOffset = bssits_segments[segment_index].triangleOffset + previous_polygon_offset;
 
 
 				for (int sub_segment_index = 0; sub_segment_index < bssits_segments[segment_index].subIndexRecord.size(); sub_segment_index++)
 				{
 					SubSegment current_subsegment;
-					current_subsegment.triangleOffset = bssits_segments[segment_index].subIndexRecord[sub_segment_index].triangleOffset;
-					current_subsegment.triangleCount = bssits_segments[segment_index].subIndexRecord[sub_segment_index].triangleCount;
+					current_subsegment.polygonOffset = bssits_segments[segment_index].subIndexRecord[sub_segment_index].triangleOffset + previous_polygon_offset;
+					current_subsegment.polygonCount = bssits_segments[segment_index].subIndexRecord[sub_segment_index].triangleCount;
 
 					current_segment.subSegments.push_back(current_subsegment);
 				}
+
+				segments.push_back(current_segment);
 			}
 		}
 
@@ -927,17 +933,7 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 				shapeInfluences.push_back(inf->first);
 			}
 
-			if (use_dismember_partitions == false)
-			{
-				shapes[shape_num]->BindSkin(shapeInfluences);
-			}
-			else
-			{
-				shapes[shape_num]->BindSkinWith(shapeInfluences, BSDismemberSkinInstance::Create);
-				BSDismemberSkinInstanceRef dismember_skin = DynamicCast<BSDismemberSkinInstance>(shapes[shape_num]->GetSkinInstance());
-				dismember_skin->SetPartitions(current_dismember_partitions);
-			}
-
+			shapes[shape_num]->BindSkin(shapeInfluences);
 
 			for (unsigned int inf = 0; inf < shapeInfluences.size(); ++inf)
 			{
@@ -946,23 +942,8 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 
 			shapes[shape_num]->NormalizeSkinWeights();
 
-			if (use_dismember_partitions == true)
-			{
-				int* face_map = new int[current_dismember_partitions_faces.size()];
-				for (unsigned int x = 0; x < current_dismember_partitions_faces.size(); x++)
-				{
-					face_map[x] = current_dismember_partitions_faces[x];
-				}
-				shapes[shape_num]->GenHardwareSkinInfo(max_bones_per_partition, 4, stripify, face_map);
-				delete[] face_map;
 
-				BSDismemberSkinInstanceRef dismember_skin = DynamicCast<BSDismemberSkinInstance>(shapes[shape_num]->GetSkinInstance());
-				dismember_skin->SetPartitions(current_dismember_partitions);
-			}
-			else if (max_bones_per_partition > 0)
-			{
-				shapes[shape_num]->GenHardwareSkinInfo(max_bones_per_partition, 4, stripify);
-			}
+			shapes[shape_num]->GenHardwareSkinInfo(max_bones_per_partition, 4, stripify);
 		}
 
 		//If tangent space was requested, generate it
