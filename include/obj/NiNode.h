@@ -145,12 +145,20 @@ public:
 	NIFLIB_API bool IsSkinInfluence() const;
 
 	/*! 
-	 * Applies a huristic to guess whether this node was created as a proxy
+	 * Applies a heuristic to guess whether this node was created as a proxy
 	 * when a mesh which had more than one material in the original model
 	 * was split in an exporter.
 	 * /return Whether or not this node is probably a split mesh proxy
 	 */
 	NIFLIB_API bool IsSplitMeshProxy() const;
+
+	/*!
+	* Applies a heuristic to guess whether this node was created as a proxy
+	* when a fallout 4 mesh which had more than one material in the original model
+	* was split in an exporter.
+	* /return Whether or not this node is probably a split mesh proxy
+	*/
+	NIFLIB_API bool IsSplitBSMeshProxy() const;
 	   
 
 	/*! 

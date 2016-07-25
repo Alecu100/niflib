@@ -19,6 +19,7 @@ All rights reserved.  Please see niflib.h for license. */
 #include "../../include/obj/NiNode.h"
 #include "../../include/obj/NiAVObject.h"
 #include "../../include/obj/NiDynamicEffect.h"
+#include <obj/BSShape.h>
 using namespace Niflib;
 
 //Definition of TYPE constant
@@ -452,6 +453,40 @@ bool NiNode::IsSplitMeshProxy() const {
 			return false;
 		}
 		if ( children[i]->GetVisibility() == false ) {
+			return false;
+		}
+	}
+
+	//Made it all the way through the loop without returning false
+	return true;
+}
+
+bool NiNode::IsSplitBSMeshProxy() const
+{
+	//Let us guess that a node is a split mesh proxy if:
+	// 1)  It is not a skin influence
+	// 2)  All its children are NiTriBasedGeom derived objects.
+	// 3)  All its children have identity transforms.
+	// 4)  It has more than one child
+	// 5)  All meshes are visible
+	// 6)  ????  May need more criteria as time goes on.
+
+	if (this->IsSkinInfluence()) {
+		return false;
+	}
+
+	if (children.size() < 2) {
+		return false;
+	}
+
+	for (unsigned i = 0; i < children.size(); ++i) {
+		if (children[i]->IsDerivedType(BSShape::TYPE) == false) {
+			return false;
+		}
+		if (children[i]->GetLocalTransform() != Matrix44::IDENTITY) {
+			return false;
+		}
+		if (children[i]->GetVisibility() == false) {
 			return false;
 		}
 	}

@@ -226,6 +226,16 @@ void BSComplexShape::SetSegments(const vector<Segment>& s)
 	segments = s;
 }
 
+vector<TexCoord> BSComplexShape::GetTexCoordSet() const
+{
+	return texCoordSet;
+}
+
+void BSComplexShape::SetTexCoordSet(vector<TexCoord> set)
+{
+	texCoordSet = set;
+}
+
 void BSComplexShape::Clear()
 {
 	vertices.clear();
@@ -731,15 +741,15 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 					cv.color = colors[point->colorIndex];
 				}
 
-				if (texCoordSets.size() > 0)
-				{
-					for (unsigned int i = 0; i < point->texCoordIndices.size(); ++i)
-					{
-						const TexCoordSet& set = texCoordSets[point->texCoordIndices[i].texCoordSetIndex];
+				//if (texCoordSets.size() > 0)
+				//{
+				//	for (unsigned int i = 0; i < point->texCoordIndices.size(); ++i)
+				//	{
+				//		const TexCoordSet& set = texCoordSets[point->texCoordIndices[i].texCoordSetIndex];
 
-						cv.texCoords[set.texType] = set.texCoords[point->texCoordIndices[i].texCoordIndex];
-					}
-				}
+				//		cv.texCoords[set.texType] = set.texCoords[point->texCoordIndices[i].texCoordIndex];
+				//	}
+				//}
 
 				bool found_match = false;
 				//Search for an identical vertex in the list
@@ -915,14 +925,14 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 		{
 			niData->SetVertexColors(shapeColors);
 		}
-		if (texCoordSets.size() > 0)
-		{
-			niData->SetUVSetCount(int(shapeTCs.size()));
-			for (unsigned int tex_index = 0; tex_index < shapeTCs.size(); ++tex_index)
-			{
-				niData->SetUVSet(tex_index, shapeTCs[tex_index]);
-			}
-		}
+		//if (texCoordSets.size() > 0)
+		//{
+		//	niData->SetUVSetCount(int(shapeTCs.size()));
+		//	for (unsigned int tex_index = 0; tex_index < shapeTCs.size(); ++tex_index)
+		//	{
+		//		niData->SetUVSet(tex_index, shapeTCs[tex_index]);
+		//	}
+		//}
 
 		//If there are any skin influences, bind the skin
 		if (shapeWeights.size() > 0)

@@ -173,6 +173,10 @@ namespace Niflib
 		*/
 		NIFLIB_API void SetSegments(const vector<Segment>& s);
 
+		NIFLIB_API vector<TexCoord> GetTexCoordSet() const;
+
+		NIFLIB_API void SetTexCoordSet(vector<TexCoord> set);
+
 	private:
 		vector<WeightedVertex> vertices;
 		vector<Color4> colors;
