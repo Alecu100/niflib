@@ -92,19 +92,19 @@ public:
 
 	// Unknown.
 	// \return The current value.
-	Ref<BSSkin__BoneData> GetBoneData() const;
+	NIFLIB_API Ref<BSSkin__BoneData> GetBoneData() const;
 
 	// Unknown.
 	// \param[in] value The new value.
-	void SetBoneData(Ref<BSSkin__BoneData > value);
+	NIFLIB_API void SetBoneData(Ref<BSSkin__BoneData > value);
 
 	// Unknown.
 	// \return The current value.
-	vector<Ref<NiNode>> GetBones() const;
+	NIFLIB_API vector<Ref<NiNode>> GetBones() const;
 
 	// Unknown.
 	// \param[in] value The new value.
-	void SetBones(const vector<Ref<NiNode> >& value);
+	NIFLIB_API void SetBones(const vector<Ref<NiNode> >& value);
 
 	//--END CUSTOM CODE--//
 protected:

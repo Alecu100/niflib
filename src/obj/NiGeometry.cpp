@@ -837,6 +837,10 @@ Niflib::array<2, Ref<NiProperty>> NiGeometry::GetBSProperties()
 	return bsProperties;
 }
 
+void Niflib::NiGeometry::SetBSProperties(array<2, Ref<NiProperty> > value) {
+	this->bsProperties = value;
+}
+
 #pragma endregion
 
 void NiGeometry::SetSkinInstance(NiSkinInstance* value) {

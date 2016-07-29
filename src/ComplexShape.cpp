@@ -829,22 +829,19 @@ void ComplexShape::Merge(NiAVObject* root)
 
 Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max_bones_per_partition, bool stripify, bool tangent_space, float min_vertex_weight, byte tspace_flags) const
 {
+
 	//Make sure parent is not NULL
-	if (parent == NULL)
-	{
+	if (parent == NULL) {
 		throw runtime_error("A parent is necessary to split a complex shape.");
 	}
 
 	bool use_dismember_partitions = false;
 
-	if (dismemberPartitionsFaces.size() > 0)
-	{
-		if (dismemberPartitionsFaces.size() != faces.size())
-		{
+	if (dismemberPartitionsFaces.size() > 0) {
+		if (dismemberPartitionsFaces.size() != faces.size()) {
 			throw runtime_error("The number of faces mapped to skin partitions is different from the actual face count.");
 		}
-		if (dismemberPartitionsBodyParts.size() == 0)
-		{
+		if (dismemberPartitionsBodyParts.size() == 0) {
 			throw runtime_error("The number of dismember partition body parts can't be 0.");
 		}
 
@@ -854,22 +851,18 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 	//There will be one NiTriShape per property group
 	//with a minimum of 1
 	unsigned int num_shapes = (unsigned int)(propGroups.size());
-	if (num_shapes == 0)
-	{
+	if (num_shapes == 0) {
 		num_shapes = 1;
 	}
 
 	vector<NiTriBasedGeomRef> shapes(num_shapes);
 
 	//Loop through each shape slot and create a NiTriShape
-	for (unsigned int shape_num = 0; shape_num < shapes.size(); ++shape_num)
-	{
-		if (stripify)
-		{
+	for (unsigned int shape_num = 0; shape_num < shapes.size(); ++shape_num) {
+		if (stripify) {
 			shapes[shape_num] = new NiTriStrips;
 		}
-		else
-		{
+		else {
 			shapes[shape_num] = new NiTriShape;
 		}
 	}
@@ -879,19 +872,16 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 	//If there is just one shape, return it.  Otherwise
 	//create a node, parent all shapes to it, and return
 	// that
-	if (shapes.size() == 1)
-	{
+	if (shapes.size() == 1) {
 		//One shape
 		shapes[0]->SetName(name);
 		root = StaticCast<NiAVObject>(shapes[0]);
 	}
-	else
-	{
+	else {
 		//Multiple shapes
 		NiNodeRef niNode = new NiNode;
 		niNode->SetName(name);
-		for (unsigned int i = 0; i < shapes.size(); ++i)
-		{
+		for (unsigned int i = 0; i < shapes.size(); ++i) {
 			niNode->AddChild(StaticCast<NiAVObject>(shapes[i]));
 
 			//Set Shape Name
@@ -909,16 +899,14 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 
 	//Create NiTriShapeData and fill it out with all data that is relevant
 	//to this shape based on the material.
-	for (unsigned int shape_num = 0; shape_num < shapes.size(); ++shape_num)
-	{
+	for (unsigned int shape_num = 0; shape_num < shapes.size(); ++shape_num) {
+
 		NiTriBasedGeomDataRef niData;
 
-		if (stripify)
-		{
+		if (stripify) {
 			niData = new NiTriStripsData;
 		}
-		else
-		{
+		else {
 			niData = new NiTriShapeData;
 		}
 		shapes[shape_num]->SetData(StaticCast<NiGeometryData>(niData));
@@ -941,56 +929,46 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 
 		//Loop through all faces, and all points on each face
 		//to set the vertices in the CompoundVertex list
-		for (vector<ComplexFace>::const_iterator face = faces.begin(); face != faces.end(); ++face)
-		{
+		for (vector<ComplexFace>::const_iterator face = faces.begin(); face != faces.end(); ++face) {
 			//Ignore faces with less than 3 vertices
-			if (face->points.size() < 3)
-			{
+			if (face->points.size() < 3) {
 				continue;
 			}
 
 			//Skip this face if the material does not relate to this shape
-			if (face->propGroupIndex != shape_num)
-			{
+			if (face->propGroupIndex != shape_num) {
 				continue;
 			}
 
 			vector<unsigned short> shapeFacePoints;
-			for (vector<ComplexPoint>::const_iterator point = face->points.begin(); point != face->points.end(); ++point)
-			{
+			for (vector<ComplexPoint>::const_iterator point = face->points.begin(); point != face->points.end(); ++point) {
+
 				//--Set up Compound vertex--//
 				CompoundVertex cv;
 
-				if (vertices.size() > 0)
-				{
-					const WeightedVertex& wv = vertices[point->vertexIndex];
+				if (vertices.size() > 0) {
+					const WeightedVertex & wv = vertices[point->vertexIndex];
 					cv.position = wv.position;
 
-					if (skinInfluences.size() > 0)
-					{
-						for (unsigned int i = 0; i < wv.weights.size(); ++i)
-						{
-							const SkinInfluence& inf = wv.weights[i];
+					if (skinInfluences.size() > 0) {
+						for (unsigned int i = 0; i < wv.weights.size(); ++i) {
+							const SkinInfluence & inf = wv.weights[i];
 
 							cv.weights[skinInfluences[inf.influenceIndex]] = inf.weight;
 						}
 					}
 				}
 
-				if (normals.size() > 0)
-				{
+				if (normals.size() > 0) {
 					cv.normal = normals[point->normalIndex];
 				}
-				if (colors.size() > 0)
-				{
+				if (colors.size() > 0) {
 					cv.color = colors[point->colorIndex];
 				}
 
-				if (texCoordSets.size() > 0)
-				{
-					for (unsigned int i = 0; i < point->texCoordIndices.size(); ++i)
-					{
-						const TexCoordSet& set = texCoordSets[point->texCoordIndices[i].texCoordSetIndex];
+				if (texCoordSets.size() > 0) {
+					for (unsigned int i = 0; i < point->texCoordIndices.size(); ++i) {
+						const TexCoordSet & set = texCoordSets[point->texCoordIndices[i].texCoordSetIndex];
 
 						cv.texCoords[set.texType] = set.texCoords[point->texCoordIndices[i].texCoordIndex];
 					}
@@ -998,10 +976,8 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 
 				bool found_match = false;
 				//Search for an identical vertex in the list
-				for (unsigned short cv_index = 0; cv_index < compVerts.size(); ++cv_index)
-				{
-					if (compVerts[cv_index] == cv)
-					{
+				for (unsigned short cv_index = 0; cv_index < compVerts.size(); ++cv_index) {
+					if (compVerts[cv_index] == cv) {
 						//We found a match, push its index into the face list
 						found_match = true;
 						shapeFacePoints.push_back(cv_index);
@@ -1010,8 +986,7 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 				}
 
 				//If no match was found, append this vertex to the list
-				if (found_match == false)
-				{
+				if (found_match == false) {
 					compVerts.push_back(cv);
 					//put the new vertex into the face point list
 					shapeFacePoints.push_back((unsigned int)(compVerts.size()) - 1);
@@ -1020,13 +995,11 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 				//Next Point
 			}
 
-			if (use_dismember_partitions == false)
-			{
+			if (use_dismember_partitions == false) {
 				//Starting from vertex 0, create a fan of triangles to fill
 				//in non-triangle polygons
 				Triangle new_face;
-				for (unsigned int i = 0; i < shapeFacePoints.size() - 2; ++i)
-				{
+				for (unsigned int i = 0; i < shapeFacePoints.size() - 2; ++i) {
 					new_face[0] = shapeFacePoints[0];
 					new_face[1] = shapeFacePoints[i + 1];
 					new_face[2] = shapeFacePoints[i + 2];
@@ -1037,13 +1010,11 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 
 				//Next Face
 			}
-			else
-			{
+			else {
 				//Starting from vertex 0, create a fan of triangles to fill
 				//in non-triangle polygons
 				Triangle new_face;
-				for (unsigned int i = 0; i < shapeFacePoints.size() - 2; ++i)
-				{
+				for (unsigned int i = 0; i < shapeFacePoints.size() - 2; ++i) {
 					new_face[0] = shapeFacePoints[0];
 					new_face[1] = shapeFacePoints[i + 1];
 					new_face[2] = shapeFacePoints[i + 2];
@@ -1060,32 +1031,24 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 
 		//Clean up the dismember skin partitions
 		//if no face points to a certain dismember partition then that dismember partition must be removed
-		if (use_dismember_partitions == true)
-		{
+		if (use_dismember_partitions == true) {
 			vector<bool> used_dismember_groups(current_dismember_partitions.size(), false);
-			for (unsigned int x = 0; x < current_dismember_partitions_faces.size(); x++)
-			{
-				if (used_dismember_groups[current_dismember_partitions_faces[x]] == false)
-				{
+			for (unsigned int x = 0; x < current_dismember_partitions_faces.size(); x++) {
+				if (used_dismember_groups[current_dismember_partitions_faces[x]] == false) {
 					used_dismember_groups[current_dismember_partitions_faces[x]] = true;
 				}
 			}
 
 			vector<BodyPartList> cleaned_up_dismember_partitions;
-			for (unsigned int x = 0; x < current_dismember_partitions.size(); x++)
-			{
-				if (used_dismember_groups[x] == false)
-				{
-					for (unsigned int y = 0; y < current_dismember_partitions_faces.size(); y++)
-					{
-						if (current_dismember_partitions_faces[y] > x)
-						{
+			for (unsigned int x = 0; x < current_dismember_partitions.size(); x++) {
+				if (used_dismember_groups[x] == false) {
+					for (unsigned int y = 0; y < current_dismember_partitions_faces.size(); y++) {
+						if (current_dismember_partitions_faces[y] > x) {
 							current_dismember_partitions_faces[y]--;
 						}
 					}
 				}
-				else
-				{
+				else {
 					cleaned_up_dismember_partitions.push_back(current_dismember_partitions[x]);
 				}
 			}
@@ -1094,65 +1057,56 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 
 		//Attatch properties if any
 		//Check if the properties are skyrim specific in which case attach them in the 2 special slots called bs_properties
-		if (propGroups.size() > 0)
-		{
+		if (propGroups.size() > 0) {
 			BSLightingShaderPropertyRef shader_property = NULL;
 
-			for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_num].begin(); prop != propGroups[shape_num].end(); ++prop)
-			{
+			for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_num].begin(); prop != propGroups[shape_num].end(); ++prop) {
 				NiPropertyRef current_property = *prop;
-				if (current_property->GetType().IsSameType(BSLightingShaderProperty::TYPE))
-				{
+				if (current_property->GetType().IsSameType(BSLightingShaderProperty::TYPE)) {
 					shader_property = DynamicCast<BSLightingShaderProperty>(current_property);
 					break;
 				}
 			}
 
-			if (shader_property == NULL)
-			{
-				for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_num].begin(); prop != propGroups[shape_num].end(); ++prop)
-				{
+			if (shader_property == NULL) {
+				for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_num].begin(); prop != propGroups[shape_num].end(); ++prop) {
 					shapes[shape_num]->AddProperty(*prop);
 				}
 			}
-			else
-			{
+			else {
 				NiAlphaPropertyRef alpha_property = NULL;
-				for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_num].begin(); prop != propGroups[shape_num].end(); ++prop)
-				{
-					if ((*prop)->GetType().IsSameType(NiAlphaProperty::TYPE))
-					{
+				for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_num].begin(); prop != propGroups[shape_num].end(); ++prop) {
+					if ((*prop)->GetType().IsSameType(NiAlphaProperty::TYPE)) {
 						alpha_property = DynamicCast<NiAlphaProperty>((*prop));
 					}
 				}
-				shapes[shape_num]->SetBSProperty(0, DynamicCast<NiProperty>(shader_property));
-				shapes[shape_num]->SetBSProperty(1, DynamicCast<NiProperty>(alpha_property));
+				array<2, NiPropertyRef> bs_properties;
+				bs_properties[0] = shader_property;
+				bs_properties[1] = alpha_property;
+				shapes[shape_num]->SetBSProperties(bs_properties);
 			}
 		}
+
 		//--Set Shape Data--//
 
 		//lists to hold data
 		vector<Vector3> shapeVerts(compVerts.size());
 		vector<Vector3> shapeNorms(compVerts.size());
 		vector<Color4> shapeColors(compVerts.size());
-		vector<vector<TexCoord>> shapeTCs;
+		vector< vector<TexCoord> > shapeTCs;
 		list<int> shapeTexCoordSets;
-		map<NiNodeRef, vector<SkinWeight>> shapeWeights;
+		map<NiNodeRef, vector<SkinWeight> > shapeWeights;
 
 		//Search for a NiTexturingProperty to build list of
 		//texture coordinates sets to create
 		NiPropertyRef niProp = shapes[shape_num]->GetPropertyByType(NiTexturingProperty::TYPE);
 		NiTexturingPropertyRef niTexProp;
-		if (niProp != NULL)
-		{
+		if (niProp != NULL) {
 			niTexProp = DynamicCast<NiTexturingProperty>(niProp);
 		}
-		if (niTexProp != NULL)
-		{
-			for (int tex_num = 0; tex_num < 8; ++tex_num)
-			{
-				if (niTexProp->HasTexture(tex_num))
-				{
+		if (niTexProp != NULL) {
+			for (int tex_num = 0; tex_num < 8; ++tex_num) {
+				if (niTexProp->HasTexture(tex_num)) {
 					shapeTexCoordSets.push_back(tex_num);
 					TexDesc td = niTexProp->GetTexture(tex_num);
 					td.uvSet = int(shapeTexCoordSets.size()) - 1;
@@ -1160,46 +1114,38 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 				}
 			}
 		}
-		else
-		{
+		else {
 			//Always include the base map if it's there, whether there's a
 			//texture or not
 			shapeTexCoordSets.push_back(BASE_MAP);
 		}
 		shapeTCs.resize(shapeTexCoordSets.size());
-		for (vector<vector<TexCoord>>::iterator set = shapeTCs.begin(); set != shapeTCs.end(); ++set)
-		{
+		for (vector< vector<TexCoord> >::iterator set = shapeTCs.begin(); set != shapeTCs.end(); ++set) {
 			set->resize(compVerts.size());
 		}
 
 		//Loop through all compound vertices, adding the data
 		//to the correct arrays.
 		unsigned int vert_index = 0;
-		for (vector<CompoundVertex>::iterator cv = compVerts.begin(); cv != compVerts.end(); ++cv)
-		{
+		for (vector<CompoundVertex>::iterator cv = compVerts.begin(); cv != compVerts.end(); ++cv) {
 			shapeVerts[vert_index] = cv->position;
 			shapeColors[vert_index] = cv->color;
 			shapeNorms[vert_index] = cv->normal;
 			shapeNorms[vert_index] = cv->normal;
 			unsigned int tex_index = 0;
-			for (list<int>::iterator tex = shapeTexCoordSets.begin(); tex != shapeTexCoordSets.end(); ++tex)
-			{
-				if (cv->texCoords.find(TexType(*tex)) != cv->texCoords.end())
-				{
+			for (list<int>::iterator tex = shapeTexCoordSets.begin(); tex != shapeTexCoordSets.end(); ++tex) {
+				if (cv->texCoords.find(TexType(*tex)) != cv->texCoords.end()) {
 					shapeTCs[tex_index][vert_index] = cv->texCoords[TexType(*tex)];
 				}
 				tex_index++;
 			}
 			SkinWeight sk;
-			for (map<NiNodeRef, float>::iterator wt = cv->weights.begin(); wt != cv->weights.end(); ++wt)
-			{
+			for (map<NiNodeRef, float>::iterator wt = cv->weights.begin(); wt != cv->weights.end(); ++wt) {
 				//Only record influences that make a noticable contribution
-				if (wt->second > min_vertex_weight)
-				{
+				if (wt->second > min_vertex_weight) {
 					sk.index = vert_index;
 					sk.weight = wt->second;
-					if (shapeWeights.find(wt->first) == shapeWeights.end())
-					{
+					if (shapeWeights.find(wt->first) == shapeWeights.end()) {
 						shapeWeights[wt->first] = vector<SkinWeight>();
 					}
 					shapeWeights[wt->first].push_back(sk);
@@ -1210,61 +1156,49 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 		}
 
 		//Finally, set the data into the NiTriShapeData
-		if (vertices.size() > 0)
-		{
+		if (vertices.size() > 0) {
 			niData->SetVertices(shapeVerts);
 			niData->SetTriangles(shapeTriangles);
 		}
-		if (normals.size() > 0)
-		{
+		if (normals.size() > 0) {
 			niData->SetNormals(shapeNorms);
 		}
-		if (colors.size() > 0)
-		{
+		if (colors.size() > 0) {
 			niData->SetVertexColors(shapeColors);
 		}
-		if (texCoordSets.size() > 0)
-		{
+		if (texCoordSets.size() > 0) {
 			niData->SetUVSetCount(int(shapeTCs.size()));
-			for (unsigned int tex_index = 0; tex_index < shapeTCs.size(); ++tex_index)
-			{
+			for (unsigned int tex_index = 0; tex_index < shapeTCs.size(); ++tex_index) {
 				niData->SetUVSet(tex_index, shapeTCs[tex_index]);
 			}
 		}
 
 		//If there are any skin influences, bind the skin
-		if (shapeWeights.size() > 0)
-		{
+		if (shapeWeights.size() > 0) {
 			vector<NiNodeRef> shapeInfluences;
-			for (map<NiNodeRef, vector<SkinWeight>>::iterator inf = shapeWeights.begin(); inf != shapeWeights.end(); ++inf)
-			{
+			for (map<NiNodeRef, vector<SkinWeight> >::iterator inf = shapeWeights.begin(); inf != shapeWeights.end(); ++inf) {
 				shapeInfluences.push_back(inf->first);
 			}
 
-			if (use_dismember_partitions == false)
-			{
+			if (use_dismember_partitions == false) {
 				shapes[shape_num]->BindSkin(shapeInfluences);
 			}
-			else
-			{
+			else {
 				shapes[shape_num]->BindSkinWith(shapeInfluences, BSDismemberSkinInstance::Create);
 				BSDismemberSkinInstanceRef dismember_skin = DynamicCast<BSDismemberSkinInstance>(shapes[shape_num]->GetSkinInstance());
 				dismember_skin->SetPartitions(current_dismember_partitions);
 			}
 
 
-			for (unsigned int inf = 0; inf < shapeInfluences.size(); ++inf)
-			{
+			for (unsigned int inf = 0; inf < shapeInfluences.size(); ++inf) {
 				shapes[shape_num]->SetBoneWeights(inf, shapeWeights[shapeInfluences[inf]]);
 			}
 
 			shapes[shape_num]->NormalizeSkinWeights();
 
-			if (use_dismember_partitions == true)
-			{
+			if (use_dismember_partitions == true) {
 				int* face_map = new int[current_dismember_partitions_faces.size()];
-				for (unsigned int x = 0; x < current_dismember_partitions_faces.size(); x++)
-				{
+				for (unsigned int x = 0; x < current_dismember_partitions_faces.size(); x++) {
 					face_map[x] = current_dismember_partitions_faces[x];
 				}
 				shapes[shape_num]->GenHardwareSkinInfo(max_bones_per_partition, 4, stripify, face_map);
@@ -1273,8 +1207,7 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 				BSDismemberSkinInstanceRef dismember_skin = DynamicCast<BSDismemberSkinInstance>(shapes[shape_num]->GetSkinInstance());
 				dismember_skin->SetPartitions(current_dismember_partitions);
 			}
-			else if (max_bones_per_partition > 0)
-			{
+			else if (max_bones_per_partition > 0) {
 				shapes[shape_num]->GenHardwareSkinInfo(max_bones_per_partition, 4, stripify);
 			}
 
@@ -1292,16 +1225,12 @@ Ref<NiAVObject> ComplexShape::Split(NiNode* parent, Matrix44& transform, int max
 		}
 
 		//If tangent space was requested, generate it
-		if (tangent_space)
-		{
-			if (tspace_flags == 0)
-			{
+		if (tangent_space) {
+			if (tspace_flags == 0) {
 				shapes[shape_num]->UpdateTangentSpace();
 			}
-			else
-			{
-				if (shapes[shape_num]->GetData() != NULL)
-				{
+			else {
+				if (shapes[shape_num]->GetData() != NULL) {
 					shapes[shape_num]->GetData()->SetUVSetCount(1);
 					shapes[shape_num]->GetData()->SetTspaceFlag(tspace_flags);
 					shapes[shape_num]->UpdateTangentSpace(1);

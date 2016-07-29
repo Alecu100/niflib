@@ -301,6 +301,13 @@ public:
 
 	NIFLIB_API 	array<2, Ref<NiProperty>> GetBSProperties();
 
+	/*
+	* Sets the array of the only 2 properties that are specific to Bethesda
+	* \param[in] The new array of properties
+	*/
+	NIFLIB_API void SetBSProperties(array<2, Ref<NiProperty> > value);
+
+
 	template <typename U>
 	inline Niflib::Ref<const U> GetBSPropertyOfType() const {
 		return StaticCast<const U>(GetBSPropertyOfType(U::TYPE));

@@ -301,16 +301,16 @@ void BSComplexShape::Merge(NiAVObject* root)
 	unsigned int prop_group_index = 0;
 	for (int shape_index = 0; shape_index < shapes.size(); shape_index++)
 	{
-		BSTriShapeRef bsTriShape = shapes[shape_index];
+		BSTriShapeRef bs_tri_shape = shapes[shape_index];
 
-		vector<NiPropertyRef> current_property_group = bsTriShape->GetProperties();
+		vector<NiPropertyRef> current_property_group = bs_tri_shape->GetProperties();
 
 		//Special code to handle the Bethesda Skyrim properties
-		NiPropertyRef property = bsTriShape->GetBSProperty(0);
+		NiPropertyRef property = bs_tri_shape->GetBSProperty(0);
 		if (property != nullptr)
 		{
 			current_property_group.push_back(property);
-			property = bsTriShape->GetBSProperty(1);
+			property = bs_tri_shape->GetBSProperty(1);
 			if (property != nullptr)
 			{
 				current_property_group.push_back(property);
@@ -322,10 +322,10 @@ void BSComplexShape::Merge(NiAVObject* root)
 
 		vector<Color4> shapeColors;
 		vector<Vector3> shapeNorms;
-		vector<Vector3> shapeVerts = bsTriShape->GetVertices();
-		vector<TexCoord> shapeUV = bsTriShape->GetUVSet();
-		vector<Triangle> shapeTris = bsTriShape->GetTriangles();
-		vector<MergeLookUp> merged_vertex_indexes(bsTriShape->GetVertexCount());
+		vector<Vector3> shapeVerts = bs_tri_shape->GetVertices();
+		vector<TexCoord> shapeUV = bs_tri_shape->GetUVSet();
+		vector<Triangle> shapeTris = bs_tri_shape->GetTriangles();
+		vector<MergeLookUp> merged_vertex_indexes(bs_tri_shape->GetVertexCount());
 
 		//Vertices and normals
 		if (shapeVerts.size() != 0)
@@ -333,9 +333,9 @@ void BSComplexShape::Merge(NiAVObject* root)
 			has_any_verts = true;
 		}
 
-		if (bsTriShape->HasNormals())
+		if (bs_tri_shape->HasNormals())
 		{
-			shapeNorms = bsTriShape->GetNormals();
+			shapeNorms = bs_tri_shape->GetNormals();
 
 			for (unsigned int v = 0; v < shapeVerts.size(); ++v)
 			{
@@ -377,9 +377,9 @@ void BSComplexShape::Merge(NiAVObject* root)
 		}
 
 		//Colors
-		if (bsTriShape->HasColors())
+		if (bs_tri_shape->HasColors())
 		{
-			shapeColors = bsTriShape->GetColors();
+			shapeColors = bs_tri_shape->GetColors();
 
 			for (unsigned int c = 0; c < shapeColors.size(); ++c)
 			{
@@ -411,28 +411,28 @@ void BSComplexShape::Merge(NiAVObject* root)
 			}
 		}
 
-		BSShaderTextureSetRef bsTexProp = NULL;
-		NiPropertyRef niProp = bsTriShape->GetBSProperty(0);
-		if (niProp != NULL && niProp->GetType().IsSameType(BSLightingShaderProperty::TYPE))
+		BSShaderTextureSetRef bs_shader_texture_set = nullptr;
+		NiPropertyRef niProp = bs_tri_shape->GetBSProperty(0);
+		if (niProp != nullptr && niProp->GetType().IsSameType(BSLightingShaderProperty::TYPE))
 		{
 			BSLightingShaderPropertyRef bs_shader = DynamicCast<BSLightingShaderProperty>(niProp);
-			if (bs_shader->GetTextureSet() != NULL)
+			if (bs_shader->GetTextureSet() != nullptr)
 			{
-				bsTexProp = bs_shader->GetTextureSet();
+				bs_shader_texture_set = bs_shader->GetTextureSet();
 			}
 		}
 
-		niProp = bsTriShape->GetBSProperty(1);
-		if (niProp != NULL && niProp->GetType().IsSameType(BSLightingShaderProperty::TYPE))
+		niProp = bs_tri_shape->GetBSProperty(1);
+		if (niProp != nullptr && niProp->GetType().IsSameType(BSLightingShaderProperty::TYPE))
 		{
 			BSLightingShaderPropertyRef bs_shader = DynamicCast<BSLightingShaderProperty>(niProp);
-			if (bs_shader->GetTextureSet() != NULL)
+			if (bs_shader->GetTextureSet() != nullptr)
 			{
-				bsTexProp = bs_shader->GetTextureSet();
+				bs_shader_texture_set = bs_shader->GetTextureSet();
 			}
 		}
 
-		if (bsTexProp != NULL)
+		if (bs_shader_texture_set != nullptr)
 		{
 			for (unsigned int v = 0; v < shapeUV.size(); ++v)
 			{
@@ -442,9 +442,9 @@ void BSComplexShape::Merge(NiAVObject* root)
 
 				//Search for matching texture coordinate
 				bool match_found = false;
-				for (unsigned int tc_index = 0; tc_index < shapeUV.size(); ++tc_index)
+				for (unsigned int tc_index = 0; tc_index < texCoordSet.size(); ++tc_index)
 				{
-					if (shapeUV[tc_index] == newCoord)
+					if (texCoordSet[tc_index] == newCoord)
 					{
 						//Match found, use existing index
 						merged_vertex_indexes[v].uvIndices[0] = tc_index;
@@ -458,7 +458,7 @@ void BSComplexShape::Merge(NiAVObject* root)
 				if (match_found == false)
 				{
 					//No match found, add this texture coordinate to the list
-					shapeUV.push_back(newCoord);
+					texCoordSet.push_back(newCoord);
 					//Record new index
 					merged_vertex_indexes[v].uvIndices[0] = (unsigned int)texCoordSet.size() - 1;
 				}
@@ -498,10 +498,10 @@ void BSComplexShape::Merge(NiAVObject* root)
 		}
 
 
-		if (bsTriShape->HasSkin())
+		if (bs_tri_shape->HasSkin())
 		{
-			BSSkin__InstanceRef skinInst = DynamicCast<BSSkin__Instance>(bsTriShape->GetSkin());
-			vector<BSVertexData> bs_vertex_datas = bsTriShape->GetVertexData();
+			BSSkin__InstanceRef skinInst = DynamicCast<BSSkin__Instance>(bs_tri_shape->GetSkin());
+			vector<BSVertexData> bs_vertex_datas = bs_tri_shape->GetVertexData();
 			vector<NiNodeRef> shapeBones = skinInst->GetBones();
 
 			for (int vertex_index = 0; vertex_index < bs_vertex_datas.size(); vertex_index++)
@@ -517,10 +517,10 @@ void BSComplexShape::Merge(NiAVObject* root)
 			}
 		}
 
-		if (bsTriShape->IsDerivedType(BSSubIndexTriShape::TYPE))
+		if (bs_tri_shape->IsDerivedType(BSSubIndexTriShape::TYPE))
 		{
-			BSSubIndexTriShapeRef bsSubIndexShape = DynamicCast<BSSubIndexTriShape>(bsTriShape);
-			const vector<BSSITSSegment> bssits_segments = bsSubIndexShape->GetSegments();
+			BSSubIndexTriShapeRef bs_sub_index_tri_shape = DynamicCast<BSSubIndexTriShape>(bs_tri_shape);
+			const vector<BSSITSSegment> bssits_segments = bs_sub_index_tri_shape->GetSegments();
 
 			unsigned int previous_polygon_offset = 0;
 
@@ -533,13 +533,13 @@ void BSComplexShape::Merge(NiAVObject* root)
 			{
 				Segment current_segment;
 				current_segment.polygonCount = bssits_segments[segment_index].triangleCount;
-				current_segment.polygonOffset = bssits_segments[segment_index].triangleOffset + previous_polygon_offset;
+				current_segment.polygonOffset = bssits_segments[segment_index].triangleOffset / 3 + previous_polygon_offset;
 
 
 				for (int sub_segment_index = 0; sub_segment_index < bssits_segments[segment_index].subIndexRecord.size(); sub_segment_index++)
 				{
 					SubSegment current_subsegment;
-					current_subsegment.polygonOffset = bssits_segments[segment_index].subIndexRecord[sub_segment_index].triangleOffset + previous_polygon_offset;
+					current_subsegment.polygonOffset = bssits_segments[segment_index].subIndexRecord[sub_segment_index].triangleOffset / 3 + previous_polygon_offset;
 					current_subsegment.polygonCount = bssits_segments[segment_index].subIndexRecord[sub_segment_index].triangleCount;
 
 					current_segment.subSegments.push_back(current_subsegment);
@@ -620,18 +620,18 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 		num_shapes = 1;
 	}
 
-	vector<NiTriBasedGeomRef> shapes(num_shapes);
+	vector<BSTriShapeRef> shapes(num_shapes);
 
 	//Loop through each shape slot and create a NiTriShape
 	for (unsigned int shape_num = 0; shape_num < shapes.size(); ++shape_num)
 	{
-		if (stripify)
+		if (segments.size() > 0)
 		{
-			shapes[shape_num] = new NiTriStrips;
+			shapes[shape_num] = new BSSubIndexTriShape;
 		}
-		else
+		else 
 		{
-			shapes[shape_num] = new NiTriShape;
+			shapes[shape_num] = new BSTriShape;
 		}
 	}
 
@@ -672,18 +672,6 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 	//to this shape based on the material.
 	for (unsigned int shape_num = 0; shape_num < shapes.size(); ++shape_num)
 	{
-		NiTriBasedGeomDataRef niData;
-
-		if (stripify)
-		{
-			niData = new NiTriStripsData;
-		}
-		else
-		{
-			niData = new NiTriShapeData;
-		}
-		shapes[shape_num]->SetData(StaticCast<NiGeometryData>(niData));
-
 		//Create a list of CompoundVertex to make it easier to
 		//test for the need to clone a vertex
 		vector<CompoundVertex> compVerts;
@@ -736,20 +724,16 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 				{
 					cv.normal = normals[point->normalIndex];
 				}
+
 				if (colors.size() > 0)
 				{
 					cv.color = colors[point->colorIndex];
 				}
 
-				//if (texCoordSets.size() > 0)
-				//{
-				//	for (unsigned int i = 0; i < point->texCoordIndices.size(); ++i)
-				//	{
-				//		const TexCoordSet& set = texCoordSets[point->texCoordIndices[i].texCoordSetIndex];
-
-				//		cv.texCoords[set.texType] = set.texCoords[point->texCoordIndices[i].texCoordIndex];
-				//	}
-				//}
+				if (texCoordSet.size() > 0) 
+				{
+					cv.texCoords[BASE_MAP] = texCoordSet[point->texCoordIndices[0].texCoordIndex];
+				}
 
 				bool found_match = false;
 				//Search for an identical vertex in the list
@@ -837,42 +821,13 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 		vector<Vector3> shapeVerts(compVerts.size());
 		vector<Vector3> shapeNorms(compVerts.size());
 		vector<Color4> shapeColors(compVerts.size());
-		vector<vector<TexCoord>> shapeTCs;
-		list<int> shapeTexCoordSets;
+		vector<TexCoord> tex_coords;
 		map<NiNodeRef, vector<SkinWeight>> shapeWeights;
 
 		//Search for a NiTexturingProperty to build list of
 		//texture coordinates sets to create
-		NiPropertyRef niProp = shapes[shape_num]->GetPropertyByType(NiTexturingProperty::TYPE);
+		NiPropertyRef niProp = shapes[shape_num]->GetPropertyByType(BSLightingShaderProperty::TYPE);
 		NiTexturingPropertyRef niTexProp;
-		if (niProp != NULL)
-		{
-			niTexProp = DynamicCast<NiTexturingProperty>(niProp);
-		}
-		if (niTexProp != NULL)
-		{
-			for (int tex_num = 0; tex_num < 8; ++tex_num)
-			{
-				if (niTexProp->HasTexture(tex_num))
-				{
-					shapeTexCoordSets.push_back(tex_num);
-					TexDesc td = niTexProp->GetTexture(tex_num);
-					td.uvSet = int(shapeTexCoordSets.size()) - 1;
-					niTexProp->SetTexture(tex_num, td);
-				}
-			}
-		}
-		else
-		{
-			//Always include the base map if it's there, whether there's a
-			//texture or not
-			shapeTexCoordSets.push_back(BASE_MAP);
-		}
-		shapeTCs.resize(shapeTexCoordSets.size());
-		for (vector<vector<TexCoord>>::iterator set = shapeTCs.begin(); set != shapeTCs.end(); ++set)
-		{
-			set->resize(compVerts.size());
-		}
 
 		//Loop through all compound vertices, adding the data
 		//to the correct arrays.
@@ -883,15 +838,8 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 			shapeColors[vert_index] = cv->color;
 			shapeNorms[vert_index] = cv->normal;
 			shapeNorms[vert_index] = cv->normal;
-			unsigned int tex_index = 0;
-			for (list<int>::iterator tex = shapeTexCoordSets.begin(); tex != shapeTexCoordSets.end(); ++tex)
-			{
-				if (cv->texCoords.find(TexType(*tex)) != cv->texCoords.end())
-				{
-					shapeTCs[tex_index][vert_index] = cv->texCoords[TexType(*tex)];
-				}
-				tex_index++;
-			}
+			tex_coords[vert_index] = cv->texCoords[BASE_MAP];
+	
 			SkinWeight sk;
 			for (map<NiNodeRef, float>::iterator wt = cv->weights.begin(); wt != cv->weights.end(); ++wt)
 			{
@@ -911,68 +859,71 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 			++vert_index;
 		}
 
-		//Finally, set the data into the NiTriShapeData
+		//Finally, set the data into the BSTriShape
 		if (vertices.size() > 0)
 		{
-			niData->SetVertices(shapeVerts);
-			niData->SetTriangles(shapeTriangles);
+			vector<BSVertexData> vertex_datas;
+
+			for (int vertex_index = 0; vertex_index < shapeVerts.size(); vertex_index++)
+			{
+				BSVertexData vertex_data;
+				vertex_data.SetVertex(shapeVerts[vertex_index]);
+				vertex_data.SetNormal(shapeNorms[vertex_index]);
+				vertex_data.SetVertexColor(shapeColors[vertex_index]);
+				vertex_data.SetUV(tex_coords[vertex_index]);
+			}
+
+			shapes[shape_num]->SetVertexData(vertex_datas);
 		}
-		if (normals.size() > 0)
-		{
-			niData->SetNormals(shapeNorms);
-		}
-		if (colors.size() > 0)
-		{
-			niData->SetVertexColors(shapeColors);
-		}
-		//if (texCoordSets.size() > 0)
+
+		//if (normals.size() > 0)
 		//{
-		//	niData->SetUVSetCount(int(shapeTCs.size()));
-		//	for (unsigned int tex_index = 0; tex_index < shapeTCs.size(); ++tex_index)
-		//	{
-		//		niData->SetUVSet(tex_index, shapeTCs[tex_index]);
-		//	}
+		//	niData->SetNormals(shapeNorms);
+		//}
+		//if (colors.size() > 0)
+		//{
+		//	niData->SetVertexColors(shapeColors);
 		//}
 
-		//If there are any skin influences, bind the skin
-		if (shapeWeights.size() > 0)
-		{
-			vector<NiNodeRef> shapeInfluences;
-			for (map<NiNodeRef, vector<SkinWeight>>::iterator inf = shapeWeights.begin(); inf != shapeWeights.end(); ++inf)
-			{
-				shapeInfluences.push_back(inf->first);
-			}
+		////If there are any skin influences, bind the skin
+		//if (shapeWeights.size() > 0)
+		//{
+		//	vector<NiNodeRef> shapeInfluences;
+		//	for (map<NiNodeRef, vector<SkinWeight>>::iterator inf = shapeWeights.begin(); inf != shapeWeights.end(); ++inf)
+		//	{
+		//		shapeInfluences.push_back(inf->first);
+		//	}
 
-			shapes[shape_num]->BindSkin(shapeInfluences);
+		//	shapes[shape_num]->BindSkin(shapeInfluences);
 
-			for (unsigned int inf = 0; inf < shapeInfluences.size(); ++inf)
-			{
-				shapes[shape_num]->SetBoneWeights(inf, shapeWeights[shapeInfluences[inf]]);
-			}
+		//	for (unsigned int inf = 0; inf < shapeInfluences.size(); ++inf)
+		//	{
+		//		shapes[shape_num]->SetBoneWeights(inf, shapeWeights[shapeInfluences[inf]]);
+		//	}
 
-			shapes[shape_num]->NormalizeSkinWeights();
+		//	shapes[shape_num]->NormalizeSkinWeights();
 
 
-			shapes[shape_num]->GenHardwareSkinInfo(max_bones_per_partition, 4, stripify);
-		}
+		//	shapes[shape_num]->GenHardwareSkinInfo(max_bones_per_partition, 4, stripify);
+		//}
 
-		//If tangent space was requested, generate it
-		if (tangent_space)
-		{
-			if (tspace_flags == 0)
-			{
-				shapes[shape_num]->UpdateTangentSpace();
-			}
-			else
-			{
-				if (shapes[shape_num]->GetData() != NULL)
-				{
-					shapes[shape_num]->GetData()->SetUVSetCount(1);
-					shapes[shape_num]->GetData()->SetTspaceFlag(tspace_flags);
-					shapes[shape_num]->UpdateTangentSpace(1);
-				}
-			}
-		}
+		////If tangent space was requested, generate it
+		//if (tangent_space)
+		//{
+		//	if (tspace_flags == 0)
+		//	{
+		//		shapes[shape_num]->UpdateTangentSpace();
+		//	}
+		//	else
+		//	{
+		//		if (shapes[shape_num]->GetData() != NULL)
+		//		{
+		//			shapes[shape_num]->GetData()->SetUVSetCount(1);
+		//			shapes[shape_num]->GetData()->SetTspaceFlag(tspace_flags);
+		//			shapes[shape_num]->UpdateTangentSpace(1);
+		//		}
+		//	}
+		//}
 
 		//Next Shape
 	}

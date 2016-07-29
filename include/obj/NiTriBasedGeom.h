@@ -75,6 +75,7 @@ public:
 	 */
 	NIFLIB_API void UpdateTangentSpace(int method = 0);
 
+
 	//--END CUSTOM CODE--//
 public:
 	/*! NIFLIB_HIDDEN function.  For internal use only. */
