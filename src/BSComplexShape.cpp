@@ -821,7 +821,7 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 		vector<Vector3> shapeVerts(compVerts.size());
 		vector<Vector3> shapeNorms(compVerts.size());
 		vector<Color4> shapeColors(compVerts.size());
-		vector<TexCoord> tex_coords;
+		vector<TexCoord> tex_coords(compVerts.size());
 		map<NiNodeRef, vector<SkinWeight>> shapeWeights;
 
 		//Search for a NiTexturingProperty to build list of
