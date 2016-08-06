@@ -493,7 +493,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <OutputFile>$(SolutionDir)..\Maya2016\bin\niflib_debug_x64.dll</OutputFile>
+      <OutputFile>$(SolutionDir)..\Maya2017\bin\niflib_debug_x64.dll</OutputFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>

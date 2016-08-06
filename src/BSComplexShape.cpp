@@ -26,6 +26,7 @@ All rights reserved.  Please see niflib.h for license. */
 #include <obj/BSTriShape.h>
 #include <obj/BSSkin__Instance.h>
 #include <obj/BSSubIndexTriShape.h>
+#include <obj/BSSkin__BoneData.h>
 
 
 using namespace Niflib;
@@ -604,7 +605,7 @@ void BSComplexShape::Merge(NiAVObject* root)
 	//Done Merging
 }
 
-Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int max_bones_per_partition, bool stripify, bool tangent_space, float min_vertex_weight, byte tspace_flags) const
+Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int max_bones_per_partition, bool tangent_space, float min_vertex_weight) const
 {
 	//Make sure parent is not NULL
 	if (parent == NULL)
@@ -823,6 +824,8 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 		vector<Color4> shapeColors(compVerts.size());
 		vector<TexCoord> tex_coords(compVerts.size());
 		map<NiNodeRef, vector<SkinWeight>> shapeWeights;
+		map<NiNodeRef, int> bone_used_indices;
+		vector<NiNodeRef> bones_used;
 
 		//Search for a NiTexturingProperty to build list of
 		//texture coordinates sets to create
@@ -853,11 +856,30 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 						shapeWeights[wt->first] = vector<SkinWeight>();
 					}
 					shapeWeights[wt->first].push_back(sk);
+
+					if (bone_used_indices.find(wt->first) != bone_used_indices.end())
+					{
+						bone_used_indices[wt->first] = 0;
+						bones_used.push_back(wt->first);
+					}
 				}
 			}
 
 			++vert_index;
 		}
+
+		if (bones_used.size() > 0)
+		{
+
+			BSSkin__BoneDataRef bone_data = new BSSkin__BoneData;
+			BSSkin__InstanceRef skin_instance = new BSSkin__Instance;
+			skin_instance->SetBoneData(bone_data);
+
+			for (int bone_index = 0; bone_index < bones_used.size(); bone_index)
+			{
+			}
+		}
+
 
 		//Finally, set the data into the BSTriShape
 		if (vertices.size() > 0)

@@ -52,15 +52,7 @@ namespace Niflib
 		* \param use_dismember_partitions Uses BSDismemberSkinInstance with custom partitions for dismember
 		* \return A reference to the root NiAVObject that was created.
 		*/
-		NIFLIB_API Ref<NiAVObject> Split(
-			NiNode* parent,
-			Matrix44& transform,
-			int max_bones_per_partition = 4,
-			bool stripify = false,
-			bool tangent_space = false,
-			float min_vertex_weight = 0.001f,
-			byte tspace_flags = 0
-		) const;
+		NIFLIB_API Ref<NiAVObject> Split(NiNode* parent, Matrix44& transform, int max_bones_per_partition, bool tangent_space, float min_vertex_weight) const;
 
 		/*
 		* Merges together multiple NiTriBasedGeom objects and stores their data
