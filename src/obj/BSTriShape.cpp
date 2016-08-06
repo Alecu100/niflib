@@ -8,7 +8,24 @@ All rights reserved.  Please see niflib.h for license. */
 //-----------------------------------NOTICE----------------------------------//
 
 //--BEGIN FILE HEAD CUSTOM CODE--//
+#include <obj/BSSkin__BoneData.h>
+#include <obj/BSSkin__Instance.h>
+#include <obj/NiNode.h>
 #include "../../include/nif_math.h"
+#include <vector>
+#include <algorithm>
+
+typedef pair<Niflib::NiNodeRef, float> BoneWeight;
+typedef  pair<int, vector<BoneWeight>> VertexWeights;
+
+struct BoneWeightComparer
+{
+	bool operator() (const BoneWeight& struct1, const BoneWeight& struct2)
+	{
+		return (struct1.second < struct2.second);
+	}
+};
+
 //--END CUSTOM CODE--//
 
 #include "../../include/FixLink.h"
@@ -767,6 +784,162 @@ void BSTriShape::SetVertexFlags(bool uv, bool vc, bool normal, bool tangent, boo
 	}
 	//if (unk10) mask.flags[6] |= 0x10;
 }
+
+// Calculate bounding sphere using minimum-volume axis-align bounding box.  Its fast but not a very good fit.
+static void CalcAxisAlignedBox(const vector<SkinWeight> & n, const vector<Vector3>& vertices, Vector3& center, float& radius)
+{
+	//--Calculate center & radius--//
+
+	//Set lows and highs to first vertex
+	Vector3 lows = vertices[n[0].index];
+	Vector3 highs = vertices[n[0].index];
+
+	//Iterate through the vertices, adjusting the stored values
+	//if a vertex with lower or higher values is found
+	for (unsigned int i = 0; i < n.size(); ++i) {
+		const Vector3 & v = vertices[n[i].index];
+
+		if (v.x > highs.x) highs.x = v.x;
+		else if (v.x < lows.x) lows.x = v.x;
+
+		if (v.y > highs.y) highs.y = v.y;
+		else if (v.y < lows.y) lows.y = v.y;
+
+		if (v.z > highs.z) highs.z = v.z;
+		else if (v.z < lows.z) lows.z = v.z;
+	}
+
+	//Now we know the extent of the shape, so the center will be the average
+	//of the lows and highs
+	center = (highs + lows) / 2.0f;
+
+	//The radius will be the largest distance from the center
+	Vector3 diff;
+	float dist2(0.0f), maxdist2(0.0f);
+	for (unsigned int i = 0; i < n.size(); ++i) {
+		const Vector3 & v = vertices[n[i].index];
+
+		diff = center - v;
+		dist2 = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+		if (dist2 > maxdist2) maxdist2 = dist2;
+	};
+	radius = sqrt(maxdist2);
+}
+
+void BSTriShape::GenSkinData(const map<Ref<NiNode>, vector<SkinWeight>>& shape_weights)
+{
+	BSSkin__BoneDataRef bone_data = new BSSkin__BoneData;
+	BSSkin__InstanceRef skin_instance = new BSSkin__Instance;
+	skin_instance->SetBoneData(bone_data);
+
+	this->SetSkin(DynamicCast<NiObject>(skin_instance));
+
+	map<int, VertexWeights> vertex_weights;
+	map<int, VertexWeights> vertex_weights_4weights;
+	map<NiNodeRef, int> used_bones_indices;
+	vector<NiNodeRef> used_bones;
+
+	for (int vertex_index = 0; vertex_index < vertexData.size(); vertex_index++)
+	{
+		VertexWeights vertex_weight(vertex_index, vector<BoneWeight>());
+		vertex_weights[vertex_index] = vertex_weight;
+
+		VertexWeights vertex_weight2(vertex_index, vector<BoneWeight>());
+		vertex_weights_4weights[vertex_index] = vertex_weight2;
+	}
+
+	for (map<Ref<NiNode>, vector<SkinWeight>>::const_iterator iterator = shape_weights.begin(); iterator != shape_weights.end(); ++iterator)
+	{
+		for (int vertex_weight_index = 0; vertex_weight_index < iterator->second.size(); vertex_weight_index++)
+		{
+			BoneWeight weight(iterator->first, iterator->second[vertex_weight_index].weight);
+
+			vertex_weights[iterator->second[vertex_weight_index].index].second.push_back(weight);
+		}
+	}
+
+	for (map<int, VertexWeights>::const_iterator iterator = vertex_weights.begin(); iterator != vertex_weights.end(); ++iterator)
+	{
+		vector<BoneWeight> sorted_weights = iterator->second.second;
+
+		sort(sorted_weights.begin(), sorted_weights.end(), BoneWeightComparer());
+
+		for (int weight_index = 0; weight_index < sorted_weights.size() && weight_index < 4; weight_index++)
+		{
+			vertex_weights_4weights[iterator->first].second.push_back(sorted_weights[weight_index]);
+		}
+	}
+
+	for (int vertex_index = 0; vertex_index < vertexData.size(); vertex_index++)
+	{
+		vertexData[vertex_index].SetBoneWeight(0, 0, 0);
+		vertexData[vertex_index].SetBoneWeight(1, 0, 0);
+		vertexData[vertex_index].SetBoneWeight(2, 0, 0);
+		vertexData[vertex_index].SetBoneWeight(3, 0, 0);
+	}
+
+	vector<Vector3> vertices = this->GetVertices();
+	Vector3 center;
+	float radius;
+	vector<BSSkinBoneTrans> bone_transforms;
+
+	int bone_index = 0;
+	for (map<Ref<NiNode>, vector<SkinWeight>>::const_iterator iterator = shape_weights.begin(); iterator != shape_weights.end(); ++iterator, bone_index++)
+	{
+		bool is_used = false;
+		NiNodeRef current_bone = iterator->first;
+
+		for (int vertex_index = 0; vertex_index < vertex_weights_4weights.size(); vertex_index++)
+		{
+			for (int weight_index = 0; weight_index < vertex_weights_4weights[vertex_index].second.size(); weight_index++)
+			{
+				if (vertex_weights_4weights[vertex_index].second[weight_index].first == current_bone)
+				{
+					is_used = true;
+					break;
+				}
+			}
+
+			if (is_used)
+			{
+				break;
+			}
+		}
+
+		if (is_used)
+		{
+			used_bones_indices[current_bone] = bone_index;
+			used_bones.push_back(current_bone);
+
+			CalcAxisAlignedBox(iterator->second, vertices, center, radius);
+
+			BSSkinBoneTrans current_bone_transform;
+			current_bone_transform.scale = 1;
+			current_bone_transform.rotation = Matrix33::IDENTITY;
+			current_bone_transform.translation = Vector3(0,0,0);
+			current_bone_transform.SetBoundingSphere(center, radius);
+			bone_transforms.push_back(current_bone_transform);
+
+			bone_index++;
+		}
+	}
+
+	bone_data->SetBoneTransforms(bone_transforms);
+	skin_instance->SetBones(used_bones);
+
+	for (int vertex_index = 0; vertex_index < vertex_weights_4weights.size(); vertex_index++)
+	{
+		for (int weight_index = 0; weight_index < vertex_weights_4weights[vertex_index].second.size(); weight_index++)
+		{
+			NiNodeRef current_bone = vertex_weights_4weights[vertex_index].second[weight_index].first;
+			float current_weight = vertex_weights_4weights[vertex_index].second[weight_index].second;
+			int current_bone_index = used_bones_indices[current_bone];
+
+			vertexData[vertex_index].SetBoneWeight(weight_index, current_bone_index, current_weight);
+		}
+	}
+}
+
 
 
 bool BSTriShape::IsSkin() {

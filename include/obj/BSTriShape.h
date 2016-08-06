@@ -278,6 +278,8 @@ public:
 	// \param[in] value The new value.
 	NIFLIB_API void SetTriangles(const vector<Triangle >& value);
 
+	NIFLIB_API void GenSkinData(const map<Ref<NiNode>, vector<SkinWeight>>& shape_weights);
+
 	/*
 	* Used to determine whether this mesh is influenced by bones as a skin.
 	* \return True if this mesh is a skin, false otherwise.

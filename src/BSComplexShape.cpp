@@ -671,7 +671,7 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 
 	//Create NiTriShapeData and fill it out with all data that is relevant
 	//to this shape based on the material.
-	for (unsigned int shape_num = 0; shape_num < shapes.size(); ++shape_num)
+	for (unsigned int shape_index = 0; shape_index < shapes.size(); ++shape_index)
 	{
 		//Create a list of CompoundVertex to make it easier to
 		//test for the need to clone a vertex
@@ -694,7 +694,7 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 			}
 
 			//Skip this face if the material does not relate to this shape
-			if (face->propGroupIndex != shape_num)
+			if (face->propGroupIndex != shape_index)
 			{
 				continue;
 			}
@@ -785,7 +785,7 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 		{
 			BSLightingShaderPropertyRef shader_property = NULL;
 
-			for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_num].begin(); prop != propGroups[shape_num].end(); ++prop)
+			for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_index].begin(); prop != propGroups[shape_index].end(); ++prop)
 			{
 				NiPropertyRef current_property = *prop;
 				if (current_property->GetType().IsSameType(BSLightingShaderProperty::TYPE))
@@ -797,23 +797,23 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 
 			if (shader_property == NULL)
 			{
-				for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_num].begin(); prop != propGroups[shape_num].end(); ++prop)
+				for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_index].begin(); prop != propGroups[shape_index].end(); ++prop)
 				{
-					shapes[shape_num]->AddProperty(*prop);
+					shapes[shape_index]->AddProperty(*prop);
 				}
 			}
 			else
 			{
 				NiAlphaPropertyRef alpha_property = NULL;
-				for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_num].begin(); prop != propGroups[shape_num].end(); ++prop)
+				for (vector<NiPropertyRef>::const_iterator prop = propGroups[shape_index].begin(); prop != propGroups[shape_index].end(); ++prop)
 				{
 					if ((*prop)->GetType().IsSameType(NiAlphaProperty::TYPE))
 					{
 						alpha_property = DynamicCast<NiAlphaProperty>((*prop));
 					}
 				}
-				shapes[shape_num]->SetBSProperty(0, DynamicCast<NiProperty>(shader_property));
-				shapes[shape_num]->SetBSProperty(1, DynamicCast<NiProperty>(alpha_property));
+				shapes[shape_index]->SetBSProperty(0, DynamicCast<NiProperty>(shader_property));
+				shapes[shape_index]->SetBSProperty(1, DynamicCast<NiProperty>(alpha_property));
 			}
 		}
 		//--Set Shape Data--//
@@ -829,7 +829,7 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 
 		//Search for a NiTexturingProperty to build list of
 		//texture coordinates sets to create
-		NiPropertyRef niProp = shapes[shape_num]->GetPropertyByType(BSLightingShaderProperty::TYPE);
+		NiPropertyRef niProp = shapes[shape_index]->GetPropertyByType(BSLightingShaderProperty::TYPE);
 		NiTexturingPropertyRef niTexProp;
 
 		//Loop through all compound vertices, adding the data
@@ -856,30 +856,13 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 						shapeWeights[wt->first] = vector<SkinWeight>();
 					}
 					shapeWeights[wt->first].push_back(sk);
-
-					if (bone_used_indices.find(wt->first) != bone_used_indices.end())
-					{
-						bone_used_indices[wt->first] = 0;
-						bones_used.push_back(wt->first);
-					}
 				}
 			}
 
 			++vert_index;
 		}
 
-		if (bones_used.size() > 0)
-		{
-
-			BSSkin__BoneDataRef bone_data = new BSSkin__BoneData;
-			BSSkin__InstanceRef skin_instance = new BSSkin__Instance;
-			skin_instance->SetBoneData(bone_data);
-
-			for (int bone_index = 0; bone_index < bones_used.size(); bone_index)
-			{
-			}
-		}
-
+		shapes[shape_index]->SetTriangles(shapeTriangles);
 
 		//Finally, set the data into the BSTriShape
 		if (vertices.size() > 0)
@@ -893,10 +876,19 @@ Ref<NiAVObject> BSComplexShape::Split(NiNode* parent, Matrix44& transform, int m
 				vertex_data.SetNormal(shapeNorms[vertex_index]);
 				vertex_data.SetVertexColor(shapeColors[vertex_index]);
 				vertex_data.SetUV(tex_coords[vertex_index]);
+
+				vertex_datas.push_back(vertex_data);
 			}
 
-			shapes[shape_num]->SetVertexData(vertex_datas);
+			shapes[shape_index]->SetVertexData(vertex_datas);
 		}
+
+		if (shapeWeights.size() > 0)
+		{
+			shapes[shape_index]->GenSkinData(shapeWeights);
+		}
+
+		shapes[shape_index]->SetVertexFlags(tex_coords.size() > 0, vertices.size() > 0, false, false, true, false);
 
 		//if (normals.size() > 0)
 		//{
