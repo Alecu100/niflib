@@ -277,59 +277,61 @@ void NiTriBasedGeom::UpdateTangentSpace(int method) {
 		}
 	}
 
-   if ( (niTriGeomData->GetTspaceFlag() & 0x01) == 0 )
+	if ((niTriGeomData->GetTspaceFlag() & 0x0F) != 0)
    {
-      // generate the byte data
-      size_t vCount = verts.size();
-      int fSize = sizeof(float[3]);
-      vector<byte> binData( 2 * vCount * fSize );
-
-      for( unsigned i = 0; i < verts.size(); i++ ) {
-         float tan_xyz[3], bin_xyz[3];
-
-         tan_xyz[0] = tangents[i].x;
-         tan_xyz[1] = tangents[i].y;
-         tan_xyz[2] = tangents[i].z;
-
-         bin_xyz[0] = binormals[i].x;
-         bin_xyz[1] = binormals[i].y;
-         bin_xyz[2] = binormals[i].z;
-
-         char * tan_Bytes = (char*)tan_xyz;
-         char * bin_Bytes = (char*)bin_xyz;
-
-         for( int j = 0; j < fSize; j++ ) {
-            binData[ i           * fSize + j] = tan_Bytes[j];
-            binData[(i + vCount) * fSize + j] = bin_Bytes[j];
-         }
-      }
-
-      // update or create the tangent space extra data
-      NiBinaryExtraDataRef TSpaceRef;
-
-      std::list<NiExtraDataRef> props = this->GetExtraData();
-      std::list<NiExtraDataRef>::iterator prop;
-
-      for( prop = props.begin(); prop != props.end(); ++prop ){
-         if((*prop)->GetName() == "Tangent space (binormal & tangent vectors)") {
-            TSpaceRef = DynamicCast<NiBinaryExtraData>(*prop);
-            break;
-         }
-      }
-
-      if( TSpaceRef == NULL ) {
-         TSpaceRef = new NiBinaryExtraData();
-         TSpaceRef->SetName( "Tangent space (binormal & tangent vectors)" );
-         this->AddExtraData( StaticCast<NiExtraData>(TSpaceRef) );
-      }
-
-      TSpaceRef->SetData(binData);
+	   // swap binormals and tangents: [ niftools-Bugs-2466995 ]
+	   niTriGeomData->SetTangents(binormals);
+	   niTriGeomData->SetBitangents(tangents);
    }
    else
    {
-      // swap binormals and tangents: [ niftools-Bugs-2466995 ]
-      niTriGeomData->SetTangents(binormals);
-      niTriGeomData->SetBitangents(tangents);
+	   // generate the byte data
+	   size_t vCount = verts.size();
+	   int fSize = sizeof(float[3]);
+	   vector<byte> binData(2 * vCount * fSize);
+
+	   for (unsigned i = 0; i < verts.size(); i++) {
+		   float tan_xyz[3], bin_xyz[3];
+
+		   tan_xyz[0] = tangents[i].x;
+		   tan_xyz[1] = tangents[i].y;
+		   tan_xyz[2] = tangents[i].z;
+
+		   bin_xyz[0] = binormals[i].x;
+		   bin_xyz[1] = binormals[i].y;
+		   bin_xyz[2] = binormals[i].z;
+
+		   char * tan_Bytes = (char*)tan_xyz;
+		   char * bin_Bytes = (char*)bin_xyz;
+
+		   for (int j = 0; j < fSize; j++) {
+			   binData[i           * fSize + j] = tan_Bytes[j];
+			   binData[(i + vCount) * fSize + j] = bin_Bytes[j];
+		   }
+	   }
+
+	   // update or create the tangent space extra data
+	   NiBinaryExtraDataRef TSpaceRef;
+
+	   std::list<NiExtraDataRef> props = this->GetExtraData();
+	   std::list<NiExtraDataRef>::iterator prop;
+
+	   for (prop = props.begin(); prop != props.end(); ++prop) {
+		   if ((*prop)->GetName() == "Tangent space (binormal & tangent vectors)") {
+			   TSpaceRef = DynamicCast<NiBinaryExtraData>(*prop);
+			   break;
+		   }
+	   }
+
+	   if (TSpaceRef == NULL) {
+		   TSpaceRef = new NiBinaryExtraData();
+		   TSpaceRef->SetName("Tangent space (binormal & tangent vectors)");
+		   this->AddExtraData(StaticCast<NiExtraData>(TSpaceRef));
+	   }
+
+	   TSpaceRef->SetData(binData);
+
+
    }
 }
 
